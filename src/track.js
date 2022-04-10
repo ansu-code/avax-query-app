@@ -49,16 +49,18 @@ const methodSign = {
 }
 
 const TrackPage = (props) => {
-    const [accountAddress, setAccountAddress] = useState("0x9F71F88cD9954692d8511F323e45D0b3b1E87EaF")
+    const [accountAddress, setAccountAddress] = useState("0x6D569D1cdC3Ea1334cB02174364E7F51eA31299D")
     const [chainName, setChainName] = useState(chainList[0].net)
-    const [tokenAddress, setTokenAddress] = useState("0xe9e7cea3dedca5984780bafc599bd69add087d56")
+    const [tokenAddress, setTokenAddress] = useState("0xdAC17F958D2ee523a2206206994597C13D831ec7")
     const [txList, setTxList] = useState([])
+    const [ttList, setTtList] = useState([])
     const [stime, setStime] = useState(new Date("2022.03.01"))
     const [etime, setEtime] = useState(new Date())
     const [tokenMetadata, setTokenMetadata] = useState()
 
     const Web3Api = useMoralisWeb3Api();
 
+    //setTokenAddress(balances)
     const fetchLogsByAddress = async () => {
         const options = {
             address: "0x965bcc7a6ab4164a9d5e2e02d60527c549a336c9",
@@ -74,8 +76,10 @@ const TrackPage = (props) => {
         console.log(logs);
     }
 
-    useEffect(() => {
+    useEffect(async () => {
         //const subscription = props.source.subscribe();
+        const balances = await Web3Api.account.getTokenBalances({ address: accountAddress });
+        console.log(balances);
         return () => {
             // Clean up the subscription
             //subscription.unsubscribe();
@@ -138,6 +142,8 @@ const TrackPage = (props) => {
         }
         const _tokenMetadata = (await Web3Api.token.getTokenMetadata(options2))[0]
         setTokenMetadata(_tokenMetadata)
+        console.log("hello:");
+        console.log(_tokenMetadata);
 
         // filter transaction list
         let _txList = []
@@ -163,7 +169,70 @@ const TrackPage = (props) => {
             }
         }
         setTxList(_txList)
+        console.log("hello1")
         console.log(txList)
+        fetchTokenTransfers();
+    }
+
+    const fetchTokenTransfers = async () => {
+        let a = "https://raw.githubusercontent.com/ethereum-lists/4bytes/master/signatures/398bac63"
+        // fetch(a, {method: "GET"}).then((res) => {
+        //     console.log(res.json())
+        // }).then((result) => {
+        //     console.log(result)
+        //     return result
+        // })
+        // getMethodname("398bac63").then(ct => {
+        //     console.log(ct)
+        // })
+
+        console.log(accountAddress, chainName, tokenAddress)
+        const acAddress = accountAddress
+        const _chain = chainName
+        const options = {
+            chain: _chain,
+            address: acAddress,
+            order: "desc",
+            from_block: "0",
+        };
+        // load transaction by account address
+        const tokenTransfers = await Web3Api.account.getTokenTransfers(options)
+        const balances = await Web3Api.account.getTokenBalances({ address: accountAddress });
+        let _ttList = [];
+        for (var i = 0; i < tokenTransfers.result.length; i++) {
+            let _tt = tokenTransfers.result[i]
+            let data = balances.find(x => x.token_address == _tt.address);
+            console.log(data);
+            if (data) {
+                _tt.symbol = data.symbol;
+                _tt.logo = data.logo;
+            }
+            else {
+                _tt.symbol = "N/A";
+            }
+            //var hexsign = tokenTransfers.result[i].input.substring(0, 10)
+            // try {
+            //     if (hexsign == "0x")
+            //         _tt.method = "Transfer"
+            //     else {
+            //         _tt.method = await getMethodname(hexsign.substring(2))
+            //         _tt.method = _tt.method.substring(0, _tt.method.indexOf('('))
+            //         console.log(_tt.method)
+            //     }
+            // } catch (e) {
+
+            // }
+            //_tx.method = await getMethodname(hexsign)
+            let d = new Date(_tt.block_timestamp)
+            if (d > stime && d < etime) {
+                //if (_tx.from_address == tokenAddress || _tx.to_address == tokenAddress)
+                _ttList.push(_tt)
+            }
+        }
+
+        setTtList(_ttList);
+        console.log("hello")
+        console.log(ttList);
     }
 
     const connectAndFetchAccount = async () => {
@@ -172,6 +241,7 @@ const TrackPage = (props) => {
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             const account = accounts[0];
             setAccountAddress(account)
+
         }
         else {
             setAccountAddress("Please Install Wallet!")
@@ -179,12 +249,15 @@ const TrackPage = (props) => {
     }
 
     const onChangeToken = async () => {
+        const balances = await Web3Api.account.getTokenBalances({ address: "0x7af0510b159a5eb4028aADE16e5a519cdfF01dF7" });
+        console.log(balances);
         // FT token
         const options = {
             chain: chainName,
             addresses: tokenAddress,
         }
         const tokenMetadata = await Web3Api.token.getTokenMetadata(options).then((e) => {
+            console.log(tokenMetadata.symbol)
             return
         })
         console.log(tokenMetadata.symbol)
@@ -249,21 +322,22 @@ const TrackPage = (props) => {
                             </select>
                         </div>
                     </div>
+
                     <div className="flex gap-2 justify-start sm:flex-row flex-col">
                         <div className="flex flex-col w-full space-x-2 sm:flex-row">
-                            <p className="flex flex-shrink-0 text-sm mt-2">Token</p>
+                            {/* <p className="flex flex-shrink-0 text-sm mt-2">Token</p>
                             <input className="w-1/3 border border-blue-900 rounded-md md:px-4 sm:px-2 px-1 py-1" onChange={(e) => { setTokenAddress(e.target.value) }} placeholder="Token address" />
                             <div className="flex items-center mr-4 mb-2">
                                 <input type="checkbox" id="amount" name="amount" value="amount" onClick={(e) => { fetchLogsByAddress() }} />
                                 <label htmlFor="amount" className="select-none">Amount</label>
                             </div>
-                            <input className="w-1/3 border border-blue-900 rounded-md md:px-4 sm:px-2 px-1 py-1" onChange={(e) => { }} />
+                            <input className="w-1/3 border border-blue-900 rounded-md md:px-4 sm:px-2 px-1 py-1" onClick={(e) => { onChangeToken() }} />
 
                             <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => { fetchTransactions2() }}>
                                 TestGetTx
-                            </button>
+                            </button> */}
                             <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => { fetchTransactions() }}>
-                                GetTx
+                                Get Tx and Token Transfers
                             </button>
                         </div>
                     </div>
@@ -272,7 +346,7 @@ const TrackPage = (props) => {
                         <table className="w-full border-collapse border">
                             <thead>
                                 <tr>
-                                    <td className="border text-center">Token Symbol</td>
+                                <td className="border text-center">Transaction Hash</td>
                                     <td className="border text-center">Method</td>
                                     <td className="border text-center">Block</td>
                                     <td className="border text-center">Date</td>
@@ -286,8 +360,44 @@ const TrackPage = (props) => {
                                 {
                                     txList.map((data, idx) => (
                                         <tr id={idx} key={idx}>
-                                            <td className="border text-center">{tokenMetadata != null ? tokenMetadata.symbol : "indefinite"}</td>
+                                             <td className="border text-center">{data.hash}</td>
                                             <td className="border text-center">{data.method}</td>
+                                            <td className="border text-center">{data.block_number}</td>
+                                            <td className="border text-center">{data.block_timestamp}</td>
+                                            <td className="border text-center">{data.from_address}</td>
+                                            <td className="border text-center">{data.to_address}</td>
+                                            <td className="border text-center">{parseInt(data.value) / 10 ** parseInt(tokenMetadata != null ? tokenMetadata.decimals : 1)}</td>
+                                            <td className="border text-center">{data.to_address === accountAddress.toLowerCase() ? 'IN' : "OUT"}</td>
+                                        </tr>
+                                    ))
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr></hr>
+                    <h1 className="p-0 font-bold">Token Transfers</h1>
+                    <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
+                        <table className="w-full border-collapse border">
+                            <thead>
+                                <tr>
+                                    <td className="border text-center">Transaction Hash</td>
+                                    <td className="border text-center">Token Symbol</td>
+                                    <td className="border text-center">Address</td>
+                                    <td className="border text-center">Block Number</td>
+                                    <td className="border text-center">Date</td>
+                                    <td className="border text-center">From</td>
+                                    <td className="border text-center">To</td>
+                                    <td className="border text-center">Value</td>
+                                    <td className="border text-center">In/Out</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    ttList.map((data, idx) => (
+                                        <tr id={idx} key={idx}>
+                                            <td className="border text-center">{data.transaction_hash}</td>
+                                            <td className="border text-center"><img src={data.logo} />{data.symbol}</td>
+                                            <td className="border text-center">{data.address}</td>
                                             <td className="border text-center">{data.block_number}</td>
                                             <td className="border text-center">{data.block_timestamp}</td>
                                             <td className="border text-center">{data.from_address}</td>
