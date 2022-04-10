@@ -9,6 +9,7 @@ import DateTimePicker from 'react-datetime-picker'
 //import 'bootstrap/dist/js/bootstrap.js';
 //import $ from 'jquery'
 
+
 const chainList = [
     {
         id: 0,
@@ -60,6 +61,40 @@ const TrackPage = (props) => {
 
     const Web3Api = useMoralisWeb3Api();
 
+    // create an array of objects with the id, trigger element (eg. button), and the content element
+const tabElements = [
+    {
+        id: 'profile',
+        triggerEl: document.querySelector('#profile-tab-example'),
+        targetEl: document.querySelector('#profile-example')
+    },
+    {
+        id: 'dashboard',
+        triggerEl: document.querySelector('#dashboard-tab-example'),
+        targetEl: document.querySelector('#dashboard-example')
+    },
+    {
+        id: 'settings',
+        triggerEl: document.querySelector('#settings-tab-example'),
+        targetEl: document.querySelector('#settings-example')
+    },
+    {
+        id: 'contacts',
+        triggerEl: document.querySelector('#contacts-tab-example'),
+        targetEl: document.querySelector('#contacts-example')
+    }
+];
+
+// options with default values
+const options = {
+    defaultTabId: 'settings',
+    activeClasses: 'text-blue-600 hover:text-blue-600 dark:text-blue-500 dark:hover:text-blue-400 border-blue-600 dark:border-blue-500',
+    inactiveClasses: 'text-gray-500 hover:text-gray-600 dark:text-gray-400 border-gray-100 hover:border-gray-300 dark:border-gray-700 dark:hover:text-gray-300',
+    onShow: () => {
+        console.log('tab is shown');
+    }
+};
+
     //setTokenAddress(balances)
     const fetchLogsByAddress = async () => {
         const options = {
@@ -80,6 +115,7 @@ const TrackPage = (props) => {
         //const subscription = props.source.subscribe();
         const balances = await Web3Api.account.getTokenBalances({ address: accountAddress });
         console.log(balances);
+       
         return () => {
             // Clean up the subscription
             //subscription.unsubscribe();
@@ -273,7 +309,147 @@ const TrackPage = (props) => {
         // } catch (e) {
         // }
     }
-
+    
+    const Tabs = ({ color }) => {
+        const [openTab, setOpenTab] = React.useState(1);
+        return (
+          <>
+            <div className="flex flex-wrap">
+              <div className="w-full">
+                <ul
+                  className="flex mb-0 list-none flex-wrap pt-3 pb-4 flex-row"
+                  role="tablist"
+                >
+                  <li className="-mb-px mr-2 last:mr-0 flex-auto text-center">
+                    <a
+                      className={
+                        "text-xs font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal " +
+                        (openTab === 1
+                          ? "text-white bg-" + color + "-600"
+                          : "text-" + color + "-600 bg-white")
+                      }
+                      onClick={e => {
+                        e.preventDefault();
+                        setOpenTab(1);
+                      }}
+                      data-toggle="tab"
+                      href="#link1"
+                      role="tablist"
+                    >
+                      Transactions
+                    </a>
+                  </li>
+                  <li className="-mb-px mr-2 last:mr-0 flex-auto text-center">
+                    <a
+                      className={
+                        "text-xs font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal " +
+                        (openTab === 2
+                          ? "text-white bg-" + color + "-600"
+                          : "text-" + color + "-600 bg-white")
+                      }
+                      onClick={e => {
+                        e.preventDefault();
+                        setOpenTab(2);
+                      }}
+                      data-toggle="tab"
+                      href="#link2"
+                      role="tablist"
+                    >
+                       Token Transfers
+                    </a>
+                  </li>
+                 
+                </ul>
+                <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+                  <div className="px-4 py-5 flex-auto">
+                    <div className="tab-content tab-space">
+                      <div className={openTab === 1 ? "block" : "hidden"} id="link1">
+                      <div id="tx">
+                        <h1 className="p-0 font-bold">Transactions</h1>
+                        <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
+                            <table className="w-full border-collapse border">
+                                <thead>
+                                    <tr>
+                                        <td className="border text-center">Transaction Hash</td>
+                                        <td className="border text-center">Method</td>
+                                        <td className="border text-center">Block</td>
+                                        <td className="border text-center">Date</td>
+                                        <td className="border text-center">From</td>
+                                        <td className="border text-center">To</td>
+                                        <td className="border text-center">Value</td>
+                                        <td className="border text-center">In/Out</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        txList.map((data, idx) => (
+                                            <tr id={idx} key={idx}>
+                                                <td className="border text-center">{data.hash}</td>
+                                                <td className="border text-center">{data.method}</td>
+                                                <td className="border text-center">{data.block_number}</td>
+                                                <td className="border text-center">{data.block_timestamp}</td>
+                                                <td className="border text-center">{data.from_address}</td>
+                                                <td className="border text-center">{data.to_address}</td>
+                                                <td className="border text-center">{parseInt(data.value) / 10 ** parseInt(tokenMetadata != null ? tokenMetadata.decimals : 1)}</td>
+                                                <td className="border text-center">{data.to_address === accountAddress.toLowerCase() ? 'IN' : "OUT"}</td>
+                                            </tr>
+                                        ))
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                      </div>
+                      <div className={openTab === 2 ? "block" : "hidden"} id="link2">
+                      <div id="tt">
+                        <h1 className="p-0 font-bold">Token Transfers</h1>
+                        <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
+                            <table className="w-full border-collapse border">
+                                <thead>
+                                    <tr>
+                                        <td className="border text-center">Transaction Hash</td>
+                                        <td className="border text-center">Token Symbol</td>
+                                        <td className="border text-center">Address</td>
+                                        <td className="border text-center">Block Number</td>
+                                        <td className="border text-center">Date</td>
+                                        <td className="border text-center">From</td>
+                                        <td className="border text-center">To</td>
+                                        <td className="border text-center">Value</td>
+                                        <td className="border text-center">In/Out</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        ttList.map((data, idx) => (
+                                            <tr id={idx} key={idx}>
+                                                <td className="border text-center">{data.transaction_hash}</td>
+                                                <td className="border text-center"><img src={data.logo} />{data.symbol}</td>
+                                                <td className="border text-center">{data.address}</td>
+                                                <td className="border text-center">{data.block_number}</td>
+                                                <td className="border text-center">{data.block_timestamp}</td>
+                                                <td className="border text-center">{data.from_address}</td>
+                                                <td className="border text-center">{data.to_address}</td>
+                                                <td className="border text-center">{parseInt(data.value) / 10 ** parseInt(tokenMetadata != null ? tokenMetadata.decimals : 1)}</td>
+                                                <td className="border text-center">{data.to_address === accountAddress.toLowerCase() ? 'IN' : "OUT"}</td>
+                                            </tr>
+                                        ))
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                      </div>
+                      
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      };
+      
+     
     return (
         <Layout>
             <div className="flex w-full items-center justify-center p-8">
@@ -341,75 +517,9 @@ const TrackPage = (props) => {
                             </button>
                         </div>
                     </div>
-                    <h1 className="p-0 font-bold">Transactions</h1>
-                    <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
-                        <table className="w-full border-collapse border">
-                            <thead>
-                                <tr>
-                                <td className="border text-center">Transaction Hash</td>
-                                    <td className="border text-center">Method</td>
-                                    <td className="border text-center">Block</td>
-                                    <td className="border text-center">Date</td>
-                                    <td className="border text-center">From</td>
-                                    <td className="border text-center">To</td>
-                                    <td className="border text-center">Value</td>
-                                    <td className="border text-center">In/Out</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    txList.map((data, idx) => (
-                                        <tr id={idx} key={idx}>
-                                             <td className="border text-center">{data.hash}</td>
-                                            <td className="border text-center">{data.method}</td>
-                                            <td className="border text-center">{data.block_number}</td>
-                                            <td className="border text-center">{data.block_timestamp}</td>
-                                            <td className="border text-center">{data.from_address}</td>
-                                            <td className="border text-center">{data.to_address}</td>
-                                            <td className="border text-center">{parseInt(data.value) / 10 ** parseInt(tokenMetadata != null ? tokenMetadata.decimals : 1)}</td>
-                                            <td className="border text-center">{data.to_address === accountAddress.toLowerCase() ? 'IN' : "OUT"}</td>
-                                        </tr>
-                                    ))
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                    <hr></hr>
-                    <h1 className="p-0 font-bold">Token Transfers</h1>
-                    <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
-                        <table className="w-full border-collapse border">
-                            <thead>
-                                <tr>
-                                    <td className="border text-center">Transaction Hash</td>
-                                    <td className="border text-center">Token Symbol</td>
-                                    <td className="border text-center">Address</td>
-                                    <td className="border text-center">Block Number</td>
-                                    <td className="border text-center">Date</td>
-                                    <td className="border text-center">From</td>
-                                    <td className="border text-center">To</td>
-                                    <td className="border text-center">Value</td>
-                                    <td className="border text-center">In/Out</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    ttList.map((data, idx) => (
-                                        <tr id={idx} key={idx}>
-                                            <td className="border text-center">{data.transaction_hash}</td>
-                                            <td className="border text-center"><img src={data.logo} />{data.symbol}</td>
-                                            <td className="border text-center">{data.address}</td>
-                                            <td className="border text-center">{data.block_number}</td>
-                                            <td className="border text-center">{data.block_timestamp}</td>
-                                            <td className="border text-center">{data.from_address}</td>
-                                            <td className="border text-center">{data.to_address}</td>
-                                            <td className="border text-center">{parseInt(data.value) / 10 ** parseInt(tokenMetadata != null ? tokenMetadata.decimals : 1)}</td>
-                                            <td className="border text-center">{data.to_address === accountAddress.toLowerCase() ? 'IN' : "OUT"}</td>
-                                        </tr>
-                                    ))
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                    <Tabs color="pink" />
+                    
+                 
                 </div>
             </div>
         </Layout>
