@@ -402,7 +402,35 @@ const TrackPage = (props) => {
 
         const message = await Moralis.executeFunction(options);
         console.log(message);
+        getBalance(accountAddress);
     }
+
+    const getBalance = async (address) => {
+        const ABI = [{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
+
+        const options = {
+            contractAddress: accountAddress,
+            functionName: "balanceOf",
+            abi: ABI,
+            params: {
+                account: address,
+              }
+        };
+
+        const message = await Moralis.executeFunction(options);
+        console.log(message);
+    }
+
+    const fetchTokenPrice = async (address) => {
+        //Get token price on PancakeSwap v2 BSC
+        const options = {
+          address: address,
+          chain: "bsc",
+          exchange: "PancakeSwapv2",
+        };
+        const price = await Web3Api.token.getTokenPrice(options);
+        console.log(price);
+      };
 
     const connectAndFetchAccount = async () => {
         if (window.ethereum) {
