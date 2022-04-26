@@ -55,7 +55,7 @@ const methodSign = {
 const TrackPage = (props) => {
     const [accountAddress, setAccountAddress] = useState("0x6D569D1cdC3Ea1334cB02174364E7F51eA31299D")
     const [chainName, setChainName] = useState(chainList[0].net)
-    const [tokenAddress, setTokenAddress] = useState("0x8F47416CaE600bccF9530E9F3aeaA06bdD1Caa79")
+    const [tokenAddress, setTokenAddress] = useState("0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7")
     const [txList, setTxList] = useState([])
     const [ttList, setTtList] = useState([])
     const [ttxList, setTtxList] = useState([])
@@ -351,7 +351,7 @@ const TrackPage = (props) => {
         });
         setTtxList(_dtxList);
         var marketCap = await getMarketCapOfToken();
-        console.log('MC:::::');
+        console.log('MC:::::'+marketCap);
         setTokenMarketCap(marketCap);
        
         console.log('hello:'+tokenMarketCap);
@@ -400,10 +400,10 @@ const TrackPage = (props) => {
 
     const getMarketCapOfToken = async () => {
         var totalSupply = hexToDec(await getTotalSupplyOfToken());
-        var tokenPrice = parseInt(await fetchTokenPrice(tokenAddress));
-        var tokenBalance =parseInt(await getBalance(tokenAddress));
-        console.log('------'+totalSupply+'----'+Moralis.Units.FromWei(tokenPrice.toString())+'------'+tokenBalance);
-        var marketCap = (totalSupply - tokenBalance) * tokenPrice;
+        var tokenPrice = parseFloat(await fetchTokenPrice(tokenAddress));
+        var tokenBalance =parseFloat(await getBalance(tokenAddress));
+        console.log('------'+totalSupply+'----'+Moralis.Units.FromWei(tokenPrice.toString())+'------'+tokenBalance+'-----'+(totalSupply - tokenBalance)* tokenPrice);
+        var marketCap = (Moralis.Units.FromWei(totalSupply.toString()) - Moralis.Units.FromWei(tokenBalance.toString())) * Moralis.Units.FromWei(tokenPrice.toString());
 
         return marketCap;
     }
@@ -432,7 +432,7 @@ const TrackPage = (props) => {
         };
 
         const message = await Moralis.executeFunction(options);
-        console.log(JSON.stringify(message));
+        console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkkk:'+JSON.stringify(message));
         return message;
         //getBalance(accountAddress);
     }
