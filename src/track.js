@@ -55,12 +55,15 @@ const methodSign = {
 const TrackPage = (props) => {
     const [accountAddress, setAccountAddress] = useState("0x6D569D1cdC3Ea1334cB02174364E7F51eA31299D")
     const [chainName, setChainName] = useState(chainList[0].net)
-    const [tokenAddress, setTokenAddress] = useState("0xdAC17F958D2ee523a2206206994597C13D831ec7")
+    const [tokenAddress, setTokenAddress] = useState("0x8F47416CaE600bccF9530E9F3aeaA06bdD1Caa79")
     const [txList, setTxList] = useState([])
     const [ttList, setTtList] = useState([])
+    const [ttxList, setTtxList] = useState([])
     const [stime, setStime] = useState(new Date("2022.03.01"))
     const [etime, setEtime] = useState(new Date())
     const [tokenMetadata, setTokenMetadata] = useState()
+    const [tokenMarketCap, setTokenMarketCap] = useState(0)
+    const [tokenInfo, setTokenInfo] = useState(0)
 
     const Web3Api = useMoralisWeb3Api();
     const { Moralis, isInitialized, web3, enableWeb3, isWeb3Enabled, isWeb3EnableLoading, web3EnableError } = useMoralis();
@@ -69,7 +72,7 @@ const TrackPage = (props) => {
     //enableWeb3();
     const { fetch } = useMoralisQuery(
         "MyTable",
-        (query) => query.equalTo("confirmed", true),
+        (query) => query.equalTo("confirmed", true).limit(1000),
         [],
         { autoFetch: false }
     );
@@ -223,6 +226,7 @@ const TrackPage = (props) => {
         console.log("hello1")
         console.log(_txList)
         fetchTokenTransfers();
+        getAllTokenForAddress(accountAddress);
     }
 
     const fetchTokenTransfers = async () => {
@@ -301,16 +305,16 @@ const TrackPage = (props) => {
         // console.log(JSON.stringify(data));
 
     }
-    const getTransactionsForAddress = async () => {
+    const getTransactionsForAddress = async (address) => {
         const options = {
             chainId: 43114,
-            address: accountAddress,
+            address: address,
             //quoteCurrency?: string;
             pageNumber: 1,
-            pageSize: 100,
+            pageSize: 1000,
         }
-        console.log("Data:" + accountAddress);
-        var data = await Moralis.Plugins.covalent.getTransactionsForAddress(options);
+        console.log("Data:" + address);
+        //var data = await Moralis.Plugins.covalent.getTransactionsForAddress(options);
         const results = await fetch().catch(err => console.log(err));
         var items = [];
         for (let i = 0; i < results.length; i++) {
@@ -320,7 +324,7 @@ const TrackPage = (props) => {
         }
         console.log(results);
         //var items = data.data.items.slice(0, 10);
-        console.log(data);
+        //console.log(data);
         let _dtxList = [];
         //await enableWeb3();
         await items.forEach(async element => {
@@ -345,12 +349,16 @@ const TrackPage = (props) => {
 
             }
         });
-
+        setTtxList(_dtxList);
+        var marketCap=await getMarketCapOfToken();
+       
+        //setTokenMarketCap(parseInt(marketCap.hex));
+        console.log(tokenMarketCap);
         console.log(_dtxList);
     }
 
-    const getTransactionsForTransactionHash = async (txHash = '0xd7bef384bbb3ef36d63af5e48f558ee56b0a99bab14391c050fe1576016099dc') => {
-        const acAddress = accountAddress
+    const getTransactionsForTransactionHash = async (txHash) => {
+       
         const _chain = chainName
         const options = {
             chain: _chain,
@@ -362,7 +370,7 @@ const TrackPage = (props) => {
 
     }
 
-    const getTransactionsForTransactionHashCovalent = async (txHash = '0xd7bef384bbb3ef36d63af5e48f558ee56b0a99bab14391c050fe1576016099dc') => {
+    const getTransactionsForTransactionHashCovalent = async (txHash) => {
         const options = {
             chainId: 43114,
             transactionHash: txHash,
@@ -373,7 +381,7 @@ const TrackPage = (props) => {
         return data;
     }
 
-    const getTransactionsForTransactionHashWeb3 = async (txHash = '0xd7bef384bbb3ef36d63af5e48f558ee56b0a99bab14391c050fe1576016099dc') => {
+    const getTransactionsForTransactionHashWeb3 = async (txHash) => {
         const options = {
             chainId: 43114,
             transactionHash: txHash,
@@ -389,27 +397,41 @@ const TrackPage = (props) => {
         return data;
     }
 
+    const getMarketCapOfToken= async()=>
+    {
+        await getTotalSupplyOfToken();
+    }
+
+    const getAllTokenForAddress= async(address)=>
+    {
+        const balances = await Web3Api.account.getTokenBalances({chain:chainName, address: address });
+        setTokenInfo(balances);
+        console.log("balances::::");
+        console.log(balances);
+    }
+
     const getTotalSupplyOfToken = async () => {
         const ABI = [
             { "inputs": [], "name": "totalSupply", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }
         ];
 
         const options = {
-            contractAddress: accountAddress,
+            contractAddress: tokenAddress,
             functionName: "totalSupply",
             abi: ABI,
         };
 
         const message = await Moralis.executeFunction(options);
-        console.log(message);
-        getBalance(accountAddress);
+        console.log(JSON.stringify(message));
+        return message;
+        //getBalance(accountAddress);
     }
 
     const getBalance = async (address) => {
         const ABI = [{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
 
         const options = {
-            contractAddress: accountAddress,
+            contractAddress: tokenAddress,
             functionName: "balanceOf",
             abi: ABI,
             params: {
@@ -432,7 +454,20 @@ const TrackPage = (props) => {
         console.log(price);
       };
 
-    const connectAndFetchAccount = async () => {
+      const connectAndFetchAccount = async () => {
+        if (window.ethereum) {
+            await enableWeb3();
+
+            const accounts = await web3.listAccounts();
+            const account = accounts[0];
+            setAccountAddress(account)
+
+        }
+        else {
+            setAccountAddress("Please Install Wallet!")
+        }
+    }
+    const connectAndFetchAccount1 = async () => {
         if (window.ethereum) {
 
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -522,7 +557,44 @@ const TrackPage = (props) => {
                                     Token Transfers
                                 </a>
                             </li>
-
+                            <li className="-mb-px mr-2 last:mr-0 flex-auto text-center">
+                                <a
+                                    className={
+                                        "text-xs font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal " +
+                                        (openTab === 3
+                                            ? "text-white bg-" + color + "-600"
+                                            : "text-" + color + "-600 bg-white")
+                                    }
+                                    onClick={e => {
+                                        e.preventDefault();
+                                        setOpenTab(3);
+                                    }}
+                                    data-toggle="tab"
+                                    href="#link3"
+                                    role="tablist"
+                                >
+                                    THOR Token Info
+                                </a>
+                            </li>
+                            <li className="-mb-px mr-2 last:mr-0 flex-auto text-center">
+                                <a
+                                    className={
+                                        "text-xs font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal " +
+                                        (openTab === 4
+                                            ? "text-white bg-" + color + "-600"
+                                            : "text-" + color + "-600 bg-white")
+                                    }
+                                    onClick={e => {
+                                        e.preventDefault();
+                                        setOpenTab(4);
+                                    }}
+                                    data-toggle="tab"
+                                    href="#link4"
+                                    role="tablist"
+                                >
+                                    Token Info
+                                </a>
+                            </li>
                         </ul>
                         <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
                             <div className="px-4 py-5 flex-auto">
@@ -565,6 +637,7 @@ const TrackPage = (props) => {
                                         </div>
                                     </div>
                                     <div className={openTab === 2 ? "block" : "hidden"} id="link2">
+                                        <h1 className="p-0 font-bold">Token Transfers</h1>
                                         <div id="tt">
                                             <h1 className="p-0 font-bold">Token Transfers</h1>
                                             <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
@@ -603,7 +676,68 @@ const TrackPage = (props) => {
                                             </div>
                                         </div>
                                     </div>
-
+                                    <div className={openTab === 3 ? "block" : "hidden"} id="link3">
+                                    <h1 className="p-0 font-bold">Market Cap Of THOR: {tokenMarketCap}</h1>
+                                        <div id="ttx">
+                                            <h1 className="p-0 font-bold">Token Transfers</h1>
+                                            <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
+                                                <table className="w-full border-collapse border">
+                                                    <thead>
+                                                        <tr>
+                                                            <td className="border text-center">Transaction Hash</td>
+                                                            <td className="border text-center">Method</td>
+                                                            <td className="border text-center">From</td>
+                                                            <td className="border text-center">To</td>
+                                                            
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {
+                                                            ttxList.map((data, idx) => (
+                                                                <tr id={idx} key={idx}>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{color:'blue'}} href={'https://snowtrace.io/tx/'+data.hash}>{data.hash}</a></td>
+                                                                    <td className="border text-center">CreateNodeWithTokens</td>
+                                                                    <td className="border text-center">{data.from}</td>
+                                                                    <td className="border text-center">{data.to}</td>
+                                                                </tr>
+                                                            ))
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className={openTab === 4 ? "block" : "hidden"} id="link4">
+                                    
+                                        <div id="ti">
+                                            <h1 className="p-0 font-bold">Token Transfers</h1>
+                                            <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
+                                                <table className="w-full border-collapse border">
+                                                    <thead>
+                                                        <tr>
+                                                            <td className="border text-center">Token Address</td>
+                                                            <td className="border text-center">Symbol</td>
+                                                            <td className="border text-center">Name</td>
+                                                            <td className="border text-center">Balance</td>
+                                                            
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {
+                                                            tokenInfo.map((data, idx) => (
+                                                                <tr id={idx} key={idx}>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{color:'blue'}} href={'https://snowtrace.io/token/'+data.token_address}>{data.token_address}</a></td>
+                                                                    <td className="border text-center"><img src={data.thumbnail} />{data.symbol}</td>
+                                                                    <td className="border text-center">{data.name}</td>
+                                                                    <td className="border text-center">{data.balance}</td>
+                                                                </tr>
+                                                            ))
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -617,9 +751,7 @@ const TrackPage = (props) => {
     return (
         <Layout>
             {web3EnableError && <span >{web3EnableError}</span>}
-            <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => enableWeb3()} disabled={isWeb3EnableLoading}>Enable web3</button>
-            <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => getTotalSupplyOfToken()}>Enable web3</button>
-            <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => getTransactionsForAddress()}>Test</button>
+            
             <div className="flex w-full items-center justify-center p-8">
                 <div className="p-4 bg-app-blue-light rounded-md flex flex-col gap-2 sm: w-full">
                     <div className="flex justify-between items-center gap-4">
@@ -683,6 +815,7 @@ const TrackPage = (props) => {
                             <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => { fetchTransactions() }}>
                                 Get Tx and Token Transfers
                             </button>
+                            <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => getTransactionsForAddress(tokenAddress)}>Get THOR Info</button>
                         </div>
                     </div>
                     <Tabs color="pink" />
