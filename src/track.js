@@ -63,7 +63,7 @@ const TrackPage = (props) => {
     const [etime, setEtime] = useState(new Date())
     const [tokenMetadata, setTokenMetadata] = useState()
     const [tokenMarketCap, setTokenMarketCap] = useState(0)
-    const [tokenInfo, setTokenInfo] = useState(0)
+    const [tokenInfo, setTokenInfo] = useState([])
 
     const Web3Api = useMoralisWeb3Api();
     const { Moralis, isInitialized, web3, enableWeb3, isWeb3Enabled, isWeb3EnableLoading, web3EnableError } = useMoralis();
@@ -350,15 +350,16 @@ const TrackPage = (props) => {
             }
         });
         setTtxList(_dtxList);
-        var marketCap=await getMarketCapOfToken();
+        var marketCap = await getMarketCapOfToken();
+        console.log('MC:::::');
+        setTokenMarketCap(marketCap);
        
-        //setTokenMarketCap(parseInt(marketCap.hex));
-        console.log(tokenMarketCap);
+        console.log('hello:'+tokenMarketCap);
         console.log(_dtxList);
     }
 
     const getTransactionsForTransactionHash = async (txHash) => {
-       
+
         const _chain = chainName
         const options = {
             chain: _chain,
@@ -397,19 +398,28 @@ const TrackPage = (props) => {
         return data;
     }
 
-    const getMarketCapOfToken= async()=>
-    {
-        await getTotalSupplyOfToken();
+    const getMarketCapOfToken = async () => {
+        var totalSupply = hexToDec(await getTotalSupplyOfToken());
+        var tokenPrice = parseInt(await fetchTokenPrice(tokenAddress));
+        var tokenBalance =parseInt(await getBalance(tokenAddress));
+        console.log('------'+totalSupply+'----'+Moralis.Units.FromWei(tokenPrice.toString())+'------'+tokenBalance);
+        var marketCap = (totalSupply - tokenBalance) * tokenPrice;
+
+        return marketCap;
     }
 
-    const getAllTokenForAddress= async(address)=>
-    {
-        const balances = await Web3Api.account.getTokenBalances({chain:chainName, address: address });
+    const getAllTokenForAddress = async (address) => {
+
+        const balances = await Web3Api.account.getTokenBalances({ chain: chainName, address: address });
         setTokenInfo(balances);
         console.log("balances::::");
         console.log(balances);
     }
 
+    const hexToDec = (value) => {
+        if (value?._isBigNumber) return parseInt(value._hex, 16)
+        else return -1
+    }
     const getTotalSupplyOfToken = async () => {
         const ABI = [
             { "inputs": [], "name": "totalSupply", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }
@@ -428,7 +438,7 @@ const TrackPage = (props) => {
     }
 
     const getBalance = async (address) => {
-        const ABI = [{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
+        const ABI = [{ "inputs": [{ "internalType": "address", "name": "account", "type": "address" }], "name": "balanceOf", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }];
 
         const options = {
             contractAddress: tokenAddress,
@@ -436,25 +446,28 @@ const TrackPage = (props) => {
             abi: ABI,
             params: {
                 account: address,
-              }
+            }
         };
 
         const message = await Moralis.executeFunction(options);
         console.log(message);
+        return message;
     }
 
     const fetchTokenPrice = async (address) => {
         //Get token price on PancakeSwap v2 BSC
         const options = {
-          address: address,
-          chain: "bsc",
-          exchange: "PancakeSwapv2",
+            address: address,
+            chain: chainName,
+            //exchange: "PancakeSwapv2",
         };
+        console.log('-----'+address);
         const price = await Web3Api.token.getTokenPrice(options);
-        console.log(price);
-      };
+        console.log('-----'+JSON.stringify(price));
+        return price.nativePrice.value;
+    };
 
-      const connectAndFetchAccount = async () => {
+    const connectAndFetchAccount = async () => {
         if (window.ethereum) {
             await enableWeb3();
 
@@ -677,7 +690,7 @@ const TrackPage = (props) => {
                                         </div>
                                     </div>
                                     <div className={openTab === 3 ? "block" : "hidden"} id="link3">
-                                    <h1 className="p-0 font-bold">Market Cap Of THOR: {tokenMarketCap}</h1>
+                                        <h1 className="p-0 font-bold">Market Cap Of THOR: {tokenMarketCap}</h1>
                                         <div id="ttx">
                                             <h1 className="p-0 font-bold">Token Transfers</h1>
                                             <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
@@ -688,14 +701,14 @@ const TrackPage = (props) => {
                                                             <td className="border text-center">Method</td>
                                                             <td className="border text-center">From</td>
                                                             <td className="border text-center">To</td>
-                                                            
+
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {
                                                             ttxList.map((data, idx) => (
                                                                 <tr id={idx} key={idx}>
-                                                                    <td className="border text-center"><a target={'_blank'} style={{color:'blue'}} href={'https://snowtrace.io/tx/'+data.hash}>{data.hash}</a></td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/tx/' + data.hash}>{data.hash}</a></td>
                                                                     <td className="border text-center">CreateNodeWithTokens</td>
                                                                     <td className="border text-center">{data.from}</td>
                                                                     <td className="border text-center">{data.to}</td>
@@ -708,7 +721,7 @@ const TrackPage = (props) => {
                                         </div>
                                     </div>
                                     <div className={openTab === 4 ? "block" : "hidden"} id="link4">
-                                    
+
                                         <div id="ti">
                                             <h1 className="p-0 font-bold">Token Transfers</h1>
                                             <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
@@ -719,14 +732,14 @@ const TrackPage = (props) => {
                                                             <td className="border text-center">Symbol</td>
                                                             <td className="border text-center">Name</td>
                                                             <td className="border text-center">Balance</td>
-                                                            
+
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {
                                                             tokenInfo.map((data, idx) => (
                                                                 <tr id={idx} key={idx}>
-                                                                    <td className="border text-center"><a target={'_blank'} style={{color:'blue'}} href={'https://snowtrace.io/token/'+data.token_address}>{data.token_address}</a></td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/token/' + data.token_address}>{data.token_address}</a></td>
                                                                     <td className="border text-center"><img src={data.thumbnail} />{data.symbol}</td>
                                                                     <td className="border text-center">{data.name}</td>
                                                                     <td className="border text-center">{data.balance}</td>
@@ -751,7 +764,7 @@ const TrackPage = (props) => {
     return (
         <Layout>
             {web3EnableError && <span >{web3EnableError}</span>}
-            
+
             <div className="flex w-full items-center justify-center p-8">
                 <div className="p-4 bg-app-blue-light rounded-md flex flex-col gap-2 sm: w-full">
                     <div className="flex justify-between items-center gap-4">
