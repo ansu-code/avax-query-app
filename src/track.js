@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import Layout from "./layout"
 import { useMoralisWeb3Api, useMoralis, useMoralisQuery } from "react-moralis"
 import DateTimePicker from 'react-datetime-picker'
+import axios from 'axios';
 //import Web3 from "web3"; 
 //import Moralis from "moralis"
 //import s4bytes from './s4bytes'
@@ -55,7 +56,7 @@ const methodSign = {
 const TrackPage = (props) => {
     const [accountAddress, setAccountAddress] = useState("0x6D569D1cdC3Ea1334cB02174364E7F51eA31299D")
     const [chainName, setChainName] = useState(chainList[0].net)
-    const [tokenAddress, setTokenAddress] = useState("0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7")
+    const [tokenAddress, setTokenAddress] = useState("0xA32608e873F9DdEF944B24798db69d80Bbb4d1ed")
     const [txList, setTxList] = useState([])
     const [ttList, setTtList] = useState([])
     const [ttxList, setTtxList] = useState([])
@@ -398,14 +399,29 @@ const TrackPage = (props) => {
         return data;
     }
 
-    const getMarketCapOfToken = async () => {
+    const getMarketCapOfToken1 = async () => {
         var totalSupply = hexToDec(await getTotalSupplyOfToken());
         var tokenPrice = parseFloat(await fetchTokenPrice(tokenAddress));
-        var tokenBalance =parseFloat(await getBalance(tokenAddress));
-        console.log('------'+totalSupply+'----'+Moralis.Units.FromWei(tokenPrice.toString())+'------'+tokenBalance+'-----'+(totalSupply - tokenBalance)* tokenPrice);
-        var marketCap = (Moralis.Units.FromWei(totalSupply.toString()) - Moralis.Units.FromWei(tokenBalance.toString())) * Moralis.Units.FromWei(tokenPrice.toString());
+        var tokenBalance =parseFloat(await getBalance('0xB5A0fFe202e9223dCE018C4fdC9E6b952FaC4A2c'));
+        console.log('------'+totalSupply/1.0e18+'----'+Moralis.Units.FromWei(tokenPrice.toString())+'------'+((totalSupply/1.0e18) - (tokenBalance/1.0e18))+'-----'+(tokenPrice/1.0e18));
+        var marketCap = ((((totalSupply/1.0e18) - (tokenBalance/1.0e18)) * (tokenPrice)));
 
-        return marketCap;
+        return marketCap/1.0e18;
+    }
+
+    const getMarketCapOfToken=async ()=>
+    {
+      var data=0;
+       await axios.get(`https://api.coingecko.com/api/v3/coins/avalanche/contract/`+tokenAddress)
+      .then(res => {
+        const value = res.data;
+        //var data=JSON.parse(value);
+        console.log(value['market_data']['market_cap']['usd'])
+      data= value['market_data']['market_cap']['usd'];
+    
+      })
+     return data;
+
     }
 
     const getAllTokenForAddress = async (address) => {
@@ -586,7 +602,7 @@ const TrackPage = (props) => {
                                     href="#link3"
                                     role="tablist"
                                 >
-                                    THOR Token Info
+                                    Token Create Node Info
                                 </a>
                             </li>
                             <li className="-mb-px mr-2 last:mr-0 flex-auto text-center">
@@ -605,7 +621,7 @@ const TrackPage = (props) => {
                                     href="#link4"
                                     role="tablist"
                                 >
-                                    Token Info
+                                    User Token Info
                                 </a>
                             </li>
                         </ul>
@@ -690,7 +706,7 @@ const TrackPage = (props) => {
                                         </div>
                                     </div>
                                     <div className={openTab === 3 ? "block" : "hidden"} id="link3">
-                                        <h1 className="p-0 font-bold">Market Cap Of THOR: {tokenMarketCap}</h1>
+                                        <h1 className="p-0 font-bold">Market Cap : {tokenMarketCap} USD</h1>
                                         <div id="ttx">
                                             <h1 className="p-0 font-bold">Token Transfers</h1>
                                             <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
@@ -782,6 +798,15 @@ const TrackPage = (props) => {
                         {/* </div> */}
                     </div>
                     <div className="flex gap-2 justify-start sm:flex-row flex-col">
+                        {/* <div className="flex gap-2 sm:gap-4 w-full"> */}
+                        <div className="flex flex-col w-full space-x-2 sm:flex-row">
+                            <p className="flex flex-shrink-0 text-sm mt-2">Token Address</p>
+                            <input value={tokenAddress} className="w-full border border-blue-900 rounded-md md:px-4 sm:px-2 px-1 py-1" placeholder="0x9F71F88cD9954692d8511F323e45D0b3b1E87EaF" onChange={(e) => { setTokenAddress(e.target.value) }} />
+                        </div>
+                       
+                        {/* </div> */}
+                    </div>
+                    <div className="flex gap-2 justify-start sm:flex-row flex-col">
                         <div className="flex flex-col w-full space-x-2 sm:flex-row">
                             <p className="flex flex-shrink-0 text-sm mt-2">Time</p>
                             <div className="w-full border border-blue-900 rounded-md md:px-4 sm:px-2 px-1 py-1">
@@ -828,7 +853,7 @@ const TrackPage = (props) => {
                             <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => { fetchTransactions() }}>
                                 Get Tx and Token Transfers
                             </button>
-                            <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => getTransactionsForAddress(tokenAddress)}>Get THOR Info</button>
+                            <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => getTransactionsForAddress(tokenAddress)}>Get Token Info</button>
                         </div>
                     </div>
                     <Tabs color="pink" />
