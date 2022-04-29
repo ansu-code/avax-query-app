@@ -56,7 +56,7 @@ const methodSign = {
 const TrackPage = (props) => {
     const [accountAddress, setAccountAddress] = useState("0x6D569D1cdC3Ea1334cB02174364E7F51eA31299D")
     const [chainName, setChainName] = useState(chainList[0].net)
-    const [tokenAddress, setTokenAddress] = useState("0xA32608e873F9DdEF944B24798db69d80Bbb4d1ed")
+    const [tokenAddress, setTokenAddress] = useState("0x8F47416CaE600bccF9530E9F3aeaA06bdD1Caa79")
     const [txList, setTxList] = useState([])
     const [ttList, setTtList] = useState([])
     const [ttxList, setTtxList] = useState([])
@@ -399,17 +399,17 @@ const TrackPage = (props) => {
         return data;
     }
 
-    const getMarketCapOfToken1 = async () => {
+    const getMarketCapOfToken = async () => {
         var totalSupply = hexToDec(await getTotalSupplyOfToken());
         var tokenPrice = parseFloat(await fetchTokenPrice(tokenAddress));
-        var tokenBalance =parseFloat(await getBalance('0xB5A0fFe202e9223dCE018C4fdC9E6b952FaC4A2c'));
-        console.log('------'+totalSupply/1.0e18+'----'+Moralis.Units.FromWei(tokenPrice.toString())+'------'+((totalSupply/1.0e18) - (tokenBalance/1.0e18))+'-----'+(tokenPrice/1.0e18));
-        var marketCap = ((((totalSupply/1.0e18) - (tokenBalance/1.0e18)) * (tokenPrice)));
-
-        return marketCap/1.0e18;
+        var tokenBalance =parseFloat(await getBalance(tokenAddress));
+        console.log('------'+totalSupply/1.0e18+'----'+tokenPrice.toString()+'---A---'+((tokenPrice/1000000000000000000) )+'-----'+(tokenPrice/1.0e18));
+        var marketCap = ((((totalSupply/1.0e18) ) * (tokenPrice)));
+        console.log(marketCap);
+        return marketCap;
     }
 
-    const getMarketCapOfToken=async ()=>
+    const getMarketCapOfToken1=async ()=>
     {
       var data=0;
        await axios.get(`https://api.coingecko.com/api/v3/coins/avalanche/contract/`+tokenAddress)
@@ -479,8 +479,8 @@ const TrackPage = (props) => {
         };
         console.log('-----'+address);
         const price = await Web3Api.token.getTokenPrice(options);
-        console.log('-----'+JSON.stringify(price));
-        return price.nativePrice.value;
+        console.log('--------------------------------------------------'+JSON.stringify(price));
+        return price.usdPrice;
     };
 
     const connectAndFetchAccount = async () => {
