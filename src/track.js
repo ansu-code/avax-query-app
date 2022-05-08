@@ -3,7 +3,7 @@ import Layout from "./layout"
 import { useMoralisWeb3Api, useMoralis, useMoralisQuery } from "react-moralis"
 import DateTimePicker from 'react-datetime-picker'
 import axios from 'axios';
-//import Web3 from "web3"; 
+import Web3 from "web3"; 
 //import Moralis from "moralis"
 //import s4bytes from './s4bytes'
 //import { DateTimePickerComponent } from '@syncfusion/ej2-react-calendars';
@@ -67,9 +67,9 @@ const TrackPage = (props) => {
     const [tokenInfo, setTokenInfo] = useState([])
 
     const Web3Api = useMoralisWeb3Api();
-    const { Moralis, isInitialized, web3, enableWeb3, isWeb3Enabled, isWeb3EnableLoading, web3EnableError } = useMoralis();
+    const { Moralis, isInitialized, enableWeb3, isWeb3Enabled, isWeb3EnableLoading, web3EnableError } = useMoralis();
 
-    //const web3Js = new Web3("https://api.avax.network/ext/bc/C/rpc");
+    const web3 = new Web3("https://api.avax.network/ext/bc/C/rpc");
     //enableWeb3();
     const { fetch } = useMoralisQuery(
         "MyTable",
@@ -485,8 +485,8 @@ const TrackPage = (props) => {
 
     const connectAndFetchAccount = async () => {
         if (window.ethereum) {
-            await enableWeb3();
-
+            //await enableWeb3();
+            //web3 = new web3.providers.HttpProvider("https://api.avax.network/ext/bc/C/rpc");
             const accounts = await web3.listAccounts();
             const account = accounts[0];
             setAccountAddress(account)
@@ -779,7 +779,7 @@ const TrackPage = (props) => {
 
     return (
         <Layout>
-            {web3EnableError && <span >{web3EnableError}</span>}
+            {/* {web3EnableError && <span >{web3EnableError}</span>} */}
 
             <div className="flex w-full items-center justify-center p-8">
                 <div className="p-4 bg-app-blue-light rounded-md flex flex-col gap-2 sm: w-full">
