@@ -3,7 +3,7 @@ import Layout from "./layout"
 import { useMoralisWeb3Api, useMoralis, useMoralisQuery } from "react-moralis"
 import DateTimePicker from 'react-datetime-picker'
 import axios from 'axios';
-//import Web3 from "web3"; 
+import Web3 from "web3";
 //import Moralis from "moralis"
 //import s4bytes from './s4bytes'
 //import { DateTimePickerComponent } from '@syncfusion/ej2-react-calendars';
@@ -67,9 +67,10 @@ const TrackPage = (props) => {
     const [tokenInfo, setTokenInfo] = useState([])
 
     const Web3Api = useMoralisWeb3Api();
-    const { Moralis, isInitialized, web3, enableWeb3, isWeb3Enabled, isWeb3EnableLoading, web3EnableError } = useMoralis();
+    const { Moralis, isInitialized, web3, enableWeb3, isWeb3Enabled, isWeb3EnableLoading, web3EnableError, authenticate, isAuthenticated, user } = useMoralis();
 
-    //const web3Js = new Web3("https://api.avax.network/ext/bc/C/rpc");
+    // const web3 = new Web3("https://api.avax.network/ext/bc/C/rpc");
+    const web3Obj = new Web3("https://api.avax.network/ext/bc/C/rpc");
     //enableWeb3();
     const { fetch } = useMoralisQuery(
         "MyTable",
@@ -333,8 +334,8 @@ const TrackPage = (props) => {
             //var tx = await getTransactionsForTransactionHashCovalent(element.tx_hash);
             var tx = await getTransactionsForTransactionHashWeb3(element.tx_hash);
             console.log("Data1:");
-            //console.log(tx);
-            var hexsign = tx.data.substring(0, 10)
+            console.log(tx);
+            var hexsign = tx.input.substring(0, 10)
             if (hexsign == "0x20802c7e")
                 _dtxList.push(tx);
             try {
@@ -352,10 +353,10 @@ const TrackPage = (props) => {
         });
         setTtxList(_dtxList);
         var marketCap = await getMarketCapOfToken();
-        console.log('MC:::::'+marketCap);
+        console.log('MC:::::' + marketCap);
         setTokenMarketCap(marketCap);
-       
-        console.log('hello:'+tokenMarketCap);
+
+        console.log('hello:' + tokenMarketCap);
         console.log(_dtxList);
     }
 
@@ -393,34 +394,38 @@ const TrackPage = (props) => {
 
         //await Moralis.enableWeb3();
         //const web3Js = new Web3(Moralis.provider);
-        var data = await web3.getTransaction(txHash);
+
+        var data;
+        await web3Obj.eth.getTransaction(txHash, function (error, result) {
+            console.log(error);
+            data = result;
+        });
         //console.log(data);
         //console.log("Datadddd:");
         return data;
     }
 
     const getMarketCapOfToken = async () => {
-        var totalSupply = hexToDec(await getTotalSupplyOfToken());
+        var totalSupply = parseFloat(await getTotalSupplyOfToken());
         var tokenPrice = parseFloat(await fetchTokenPrice(tokenAddress));
-        var tokenBalance =parseFloat(await getBalance(tokenAddress));
-        console.log('------'+totalSupply/1.0e18+'----'+tokenPrice.toString()+'---A---'+((tokenPrice/1000000000000000000) )+'-----'+(tokenPrice/1.0e18));
-        var marketCap = ((((totalSupply/1.0e18) ) * (tokenPrice)));
+        //var tokenBalance =parseFloat(await getBalance(tokenAddress));
+        console.log('------' + totalSupply / 1.0e18 + '----' + tokenPrice.toString() + '---A---' + ((tokenPrice / 1000000000000000000)) + '-----' + (tokenPrice / 1.0e18));
+        var marketCap = ((((totalSupply / 1.0e18)) * (tokenPrice)));
         console.log(marketCap);
         return marketCap;
     }
 
-    const getMarketCapOfToken1=async ()=>
-    {
-      var data=0;
-       await axios.get(`https://api.coingecko.com/api/v3/coins/avalanche/contract/`+tokenAddress)
-      .then(res => {
-        const value = res.data;
-        //var data=JSON.parse(value);
-        console.log(value['market_data']['market_cap']['usd'])
-      data= value['market_data']['market_cap']['usd'];
-    
-      })
-     return data;
+    const getMarketCapOfToken1 = async () => {
+        var data = 0;
+        await axios.get(`https://api.coingecko.com/api/v3/coins/avalanche/contract/` + tokenAddress)
+            .then(res => {
+                const value = res.data;
+                //var data=JSON.parse(value);
+                console.log(value['market_data']['market_cap']['usd'])
+                data = value['market_data']['market_cap']['usd'];
+
+            })
+        return data;
 
     }
 
@@ -436,7 +441,7 @@ const TrackPage = (props) => {
         if (value?._isBigNumber) return parseInt(value._hex, 16)
         else return -1
     }
-    const getTotalSupplyOfToken = async () => {
+    const getTotalSupplyOfToken1 = async () => {
         const ABI = [
             { "inputs": [], "name": "totalSupply", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }
         ];
@@ -448,7 +453,30 @@ const TrackPage = (props) => {
         };
 
         const message = await Moralis.executeFunction(options);
-        console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkkk:'+JSON.stringify(message));
+        debugger;
+        console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkkk:' + JSON.stringify(message));
+        return message;
+        //getBalance(accountAddress);
+    }
+
+    const getTotalSupplyOfToken = async () => {
+        var message = null;
+        const ABI = [
+            { "inputs": [], "name": "totalSupply", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }
+        ];
+
+        const contract = new web3Obj.eth.Contract(ABI, tokenAddress, {
+            from: accountAddress, // default from address
+            //gasPrice: '30000000000' // default gas price in wei, 20 gwei in this case
+        });
+        await contract.methods.totalSupply().call((err, result) => {
+
+            console.log(result)
+            message = result;
+        });
+
+        debugger;
+        console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkkk:' + JSON.stringify(message));
         return message;
         //getBalance(accountAddress);
     }
@@ -477,17 +505,54 @@ const TrackPage = (props) => {
             chain: chainName,
             //exchange: "PancakeSwapv2",
         };
-        console.log('-----'+address);
+        console.log('-----' + address);
         const price = await Web3Api.token.getTokenPrice(options);
-        console.log('--------------------------------------------------'+JSON.stringify(price));
+        console.log('--------------------------------------------------' + JSON.stringify(price));
         return price.usdPrice;
     };
+    const sleep = (milliseconds) => {
+        return new Promise(resolve => setTimeout(resolve, milliseconds))
+    }
+
 
     const connectAndFetchAccount = async () => {
+        console.log('Hi'+isAuthenticated);
+        if (true) {
+            console.log('Hi1');
+            await authenticate()
+                .then(function (user) {
+                    const account = user.get("ethAddress");
+                    console.log(user.get("ethAddress"));
+                    setAccountAddress(account)
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        }
+    }
+    const connectAndFetchAccount2 = async () => {
         if (window.ethereum) {
-            await enableWeb3();
+            const data = await enableWeb3();
+            //await Moralis.enableWeb3();
+            //await data.activate();
 
-            const accounts = await web3.listAccounts();
+            var accounts = [];
+           // var web31 = new Web3(Moralis.provider);
+            try {
+                //const web3 = new Web3("https://api.avax.network/ext/bc/C/rpc");
+                // while(!isWeb3Enabled){
+                //     await enableWeb3();
+                //     console.log(isWeb3Enabled);
+                // }
+                accounts = await web3.listAccounts();
+            }
+            catch (error) {
+                console.log(error);
+                await enableWeb3();
+                //await sleep(5000);
+                // await enableWeb3();
+                accounts = await web3.listAccounts();
+            }
             const account = accounts[0];
             setAccountAddress(account)
 
@@ -779,7 +844,7 @@ const TrackPage = (props) => {
 
     return (
         <Layout>
-            {web3EnableError && <span >{web3EnableError}</span>}
+            {/* {web3EnableError && <span >{web3EnableError}</span>} */}
 
             <div className="flex w-full items-center justify-center p-8">
                 <div className="p-4 bg-app-blue-light rounded-md flex flex-col gap-2 sm: w-full">
@@ -803,7 +868,7 @@ const TrackPage = (props) => {
                             <p className="flex flex-shrink-0 text-sm mt-2">Token Address</p>
                             <input value={tokenAddress} className="w-full border border-blue-900 rounded-md md:px-4 sm:px-2 px-1 py-1" placeholder="0x9F71F88cD9954692d8511F323e45D0b3b1E87EaF" onChange={(e) => { setTokenAddress(e.target.value) }} />
                         </div>
-                       
+
                         {/* </div> */}
                     </div>
                     <div className="flex gap-2 justify-start sm:flex-row flex-col">
