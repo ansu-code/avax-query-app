@@ -9,11 +9,11 @@ const Layout = ({
   page = "home"
 }) => {
   return (
-    <div className='flex flex-col items-center min-h-screen justify-between relative overflow-x-hidden text-app-black-100'>
+    <div className='flex flex-col items-center min-h-screen justify-between relative overflow-x-hidden text-app-black-100 app-wrapper'>
       <Helmet>
         <title>{title}</title>
       </Helmet>
-      <main className="w-full flex-1 mt-16">
+      <main className="w-full flex-1">
         {children}
       </main>
     </div>

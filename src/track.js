@@ -607,7 +607,7 @@ const TrackPage = (props) => {
         return (
             <>
 
-                <div className="flex flex-wrap">
+                <div className="flex flex--wrap">
                     <div className="w-full">
                         <ul
                             className="flex mb-0 list-none flex-wrap pt-3 pb-4 flex-row"
@@ -618,7 +618,7 @@ const TrackPage = (props) => {
                                     className={
                                         "text-xs font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal " +
                                         (openTab === 1
-                                            ? "text-white bg-" + color + "-600"
+                                            ? "text-white bg-blue" + color + "-600"
                                             : "text-" + color + "-600 bg-white")
                                     }
                                     onClick={e => {
@@ -697,7 +697,7 @@ const TrackPage = (props) => {
                                         <div id="tx">
                                             <h1 className="p-0 font-bold">Transactions</h1>
                                             <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
-                                                <table className="w-full border-collapse border">
+                                                <table className="w-full border-collapse border app-table">
                                                     <thead>
                                                         <tr>
                                                             <td className="border text-center">Transaction Hash</td>
@@ -735,7 +735,7 @@ const TrackPage = (props) => {
                                         <div id="tt">
                                             <h1 className="p-0 font-bold">Token Transfers</h1>
                                             <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
-                                                <table className="w-full border-collapse border">
+                                                <table className="w-full border-collapse border app-table">
                                                     <thead>
                                                         <tr>
                                                             <td className="border text-center">Transaction Hash</td>
@@ -775,7 +775,7 @@ const TrackPage = (props) => {
                                         <div id="ttx">
                                             <h1 className="p-0 font-bold">Token Transfers</h1>
                                             <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
-                                                <table className="w-full border-collapse border">
+                                                <table className="w-full border-collapse border app-table">
                                                     <thead>
                                                         <tr>
                                                             <td className="border text-center">Transaction Hash</td>
@@ -806,7 +806,7 @@ const TrackPage = (props) => {
                                         <div id="ti">
                                             <h1 className="p-0 font-bold">Token Transfers</h1>
                                             <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
-                                                <table className="w-full border-collapse border">
+                                                <table className="w-full border-collapse border  app-table">
                                                     <thead>
                                                         <tr>
                                                             <td className="border text-center">Token Address</td>
@@ -846,32 +846,32 @@ const TrackPage = (props) => {
         <Layout>
             {/* {web3EnableError && <span >{web3EnableError}</span>} */}
 
-            <div className="flex w-full items-center justify-center p-8">
-                <div className="p-4 bg-app-blue-light rounded-md flex flex-col gap-2 sm: w-full">
-                    <div className="flex justify-between items-center gap-4">
-                        <p className="text-2xl font-bold">Dapp</p>
+            <div className="flex w-full items-center justify-center">
+                <div className="form-container p-4 rounded-md flex flex-col gap-2 sm: w-full">
+                    <div className="items-center gap-4 title">
+                        <h1>Dapp</h1>
                     </div>
                     <div className="flex gap-2 justify-start sm:flex-row flex-col">
                         {/* <div className="flex gap-2 sm:gap-4 w-full"> */}
-                        <div className="flex flex-col w-full space-x-2 sm:flex-row">
+                        <div className="flex flex-col w-full space-x-2 sm:flex-row form-box">
                             <p className="flex flex-shrink-0 text-sm mt-2">Wallet Address</p>
-                            <input value={accountAddress} className="w-full border border-blue-900 rounded-md md:px-4 sm:px-2 px-1 py-1" placeholder="0x9F71F88cD9954692d8511F323e45D0b3b1E87EaF" onChange={(e) => { setAccountAddress(e.target.value) }} />
+                            <input value={accountAddress} className="w-full md:px-4 sm:px-2 px-1 py-1" placeholder="0x9F71F88cD9954692d8511F323e45D0b3b1E87EaF" onChange={(e) => { setAccountAddress(e.target.value) }} />
                         </div>
-                        <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => { connectAndFetchAccount() }}>
+                        <button className="btn-type-1 px-8 py-1" onClick={() => { connectAndFetchAccount() }}>
                             Connect
                         </button>
                         {/* </div> */}
                     </div>
                     <div className="flex gap-2 justify-start sm:flex-row flex-col">
                         {/* <div className="flex gap-2 sm:gap-4 w-full"> */}
-                        <div className="flex flex-col w-full space-x-2 sm:flex-row">
+                        <div className="flex flex-col w-full space-x-2 sm:flex-row form-box">
                             <p className="flex flex-shrink-0 text-sm mt-2">Token Address</p>
-                            <input value={tokenAddress} className="w-full border border-blue-900 rounded-md md:px-4 sm:px-2 px-1 py-1" placeholder="0x9F71F88cD9954692d8511F323e45D0b3b1E87EaF" onChange={(e) => { setTokenAddress(e.target.value) }} />
+                            <input value={tokenAddress} className="w-full md:px-4 sm:px-2 px-1 py-1" placeholder="0x9F71F88cD9954692d8511F323e45D0b3b1E87EaF" onChange={(e) => { setTokenAddress(e.target.value) }} />
                         </div>
 
                         {/* </div> */}
                     </div>
-                    <div className="flex gap-2 justify-start sm:flex-row flex-col">
+                    {/* <div className="flex gap-2 justify-start sm:flex-row flex-col">
                         <div className="flex flex-col w-full space-x-2 sm:flex-row">
                             <p className="flex flex-shrink-0 text-sm mt-2">Time</p>
                             <div className="w-full border border-blue-900 rounded-md md:px-4 sm:px-2 px-1 py-1">
@@ -880,19 +880,19 @@ const TrackPage = (props) => {
                                     To
                                     <DateTimePicker onChange={(e) => { setEtime(e) }} value={etime} />
                                 </div>
-                                {/* <DateTimePickerComponent id="datetimepicker" strictMode={true} /> */}
-                                {/* <div class="input-group input-daterange">
+                                <DateTimePickerComponent id="datetimepicker" strictMode={true} />
+                                <div class="input-group input-daterange">
                                     <input type="text" class="form-control" value="2012-04-05"/>
                                     <div class="input-group-addon">to</div>
                                     <input type="text" class="form-control" value="2012-04-19"/>
-                                </div> */}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                     <div className="flex gap-2 justify-start sm:flex-row flex-col">
-                        <div className="flex flex-col w-full space-x-2 sm:flex-row">
-                            <p className="flex flex-shrink-0 text-sm mt-2">Chain</p>
-                            <select className="w-full py-1" onChange={(e) => setChainName(chainList[e.target.value].net)}>
+                        <div className="flex flex-col w-full space-x-2 sm:flex-row form-box">
+                            <p className="flex flex-shrink-0 text-sm mt-2 chain-para">Chain</p>
+                            <select className="w-full py-1 ml-4" onChange={(e) => setChainName(chainList[e.target.value].net)}>
                                 {
                                     chainList.map((data, idx) => (
                                         <option key={idx} value={idx}>{data.name}</option>
@@ -903,7 +903,7 @@ const TrackPage = (props) => {
                     </div>
 
                     <div className="flex gap-2 justify-start sm:flex-row flex-col">
-                        <div className="flex flex-col w-full space-x-2 sm:flex-row">
+                        <div className="flex flex-col w-full space-x-2 sm:flex-row btn-box">
                             {/* <p className="flex flex-shrink-0 text-sm mt-2">Token</p>
                             <input className="w-1/3 border border-blue-900 rounded-md md:px-4 sm:px-2 px-1 py-1" onChange={(e) => { setTokenAddress(e.target.value) }} placeholder="Token address" />
                             <div className="flex items-center mr-4 mb-2">
@@ -915,10 +915,10 @@ const TrackPage = (props) => {
                             <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => { fetchTransactions2() }}>
                                 TestGetTx
                             </button> */}
-                            <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => { fetchTransactions() }}>
+                            <button className="btn-type-2 px-8 py-1" onClick={() => { fetchTransactions() }}>
                                 Get Tx and Token Transfers
                             </button>
-                            <button className="text-white bg-app-blue-200 rounded-md border border-blue-900 px-8 py-1" onClick={() => getTransactionsForAddress(tokenAddress)}>Get Token Info</button>
+                            <button className="btn-type-2 px-8 py-1" onClick={() => getTransactionsForAddress(tokenAddress)}>Get Token Info</button>
                         </div>
                     </div>
                     <Tabs color="pink" />

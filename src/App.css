@@ -1,3 +1,7 @@
+body, html {
+  font-family: 'Roboto', sans-serif;
+}
+
 .App {
   text-align: center;
 }
@@ -28,6 +32,29 @@
   color: #61dafb;
 }
 
+.heading {
+  color: red;
+}
+.title {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 500;
+  margin-bottom: 15px;
+  color: #050f60;
+}
+
+.app-wrapper {
+  background-image: linear-gradient( 109.6deg, rgba(156,252,248,1) 11.2%, rgba(110,123,251,1) 91.1% );
+}
+.form-container {
+  padding: 30px;
+  width: 80%;
+  margin: 50px auto;
+  /* box-shadow: rgba(149, 157, 165, 0.5) 0px 8px 24px; */
+  /* box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px; */
+  /* box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px; */
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px;
+}
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
@@ -36,3 +63,96 @@
     transform: rotate(360deg);
   }
 }
+.form-box {
+  margin-bottom: 8px;
+}
+.form-box p{
+  color: #050f60;
+  font-weight: 700;
+}
+.form-box input, .form-box select {
+  border-radius: 3px;
+  outline: none;
+  color: #050f60;
+  font-size: 15px;
+  height: 34px;
+}
+.form-box input:focus {
+  outline: 1px solid #050f60;
+}
+.form-box select {
+  padding-left: 13px;
+}
+.btn-type-1, .btn-type-2 {
+  background-color:#99f5f5;
+  border-radius: 3px;
+  color: #050f60;
+  font-size: 14px;
+  font-weight: 500;
+  height: 34px;
+}
+.chain-para {
+  margin-right: 57px;
+}
+.btn-box {
+ justify-content: flex-end; 
+}
+.text-blue, .bg-blue {
+  color: #050f60;
+}
+/* .btn-type-2 {
+  
+} */
+.tab-content h1 {
+  margin-bottom: 10px;
+}
+.app-table {
+  border: 1.5px solid #99f5f5;
+}
+.app-table thead td{
+  font-weight: 500;
+  padding: 5px 10px;
+  font-size: 14px;
+  background: #99f5f5;
+    color: #050f60;
+}
+.app-table tbody td {
+  font-weight: 400;
+  font-size: 13px;
+  padding: 5px 10px;
+}
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #61dafb;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #04a3cf;
+}
+/* .table-title {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.table-title h2 {
+  font-weight: 500;
+} */
+/* .table-title .title1 {
+  text-align: left;
+  display: inline;
+}
+.table-title .title2 {
+  text-align: center;
+  display: inline;
+} */
