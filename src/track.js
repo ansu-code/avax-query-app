@@ -15,6 +15,11 @@ import Web3 from "web3";
 
 const chainList = [
     {
+        id: 2,
+        name: 'Avalanche',
+        net: 'avalanche'
+    },
+    {
         id: 0,
         name: 'Ethereum',
         net: 'eth'
@@ -23,11 +28,6 @@ const chainList = [
         id: 1,
         name: 'Binance Smart Chain',
         net: 'bsc'
-    },
-    {
-        id: 2,
-        name: 'Avalanche',
-        net: 'avalanche'
     },
     {
         id: 3,
@@ -54,7 +54,7 @@ const methodSign = {
 }
 
 const TrackPage = (props) => {
-    const [accountAddress, setAccountAddress] = useState("0x6D569D1cdC3Ea1334cB02174364E7F51eA31299D")
+    const [accountAddress, setAccountAddress] = useState("0x3351e73298661e3b002c401ce13c03e9e1566625")
     const [chainName, setChainName] = useState(chainList[0].net)
     const [tokenAddress, setTokenAddress] = useState("0x8F47416CaE600bccF9530E9F3aeaA06bdD1Caa79")
     const [txList, setTxList] = useState([])
@@ -228,7 +228,7 @@ const TrackPage = (props) => {
         console.log("hello1")
         console.log(_txList)
         fetchTokenTransfers();
-        getAllTokenForAddress(accountAddress);
+       
     }
 
     const fetchTokenTransfers = async () => {
@@ -355,7 +355,7 @@ const TrackPage = (props) => {
         var marketCap = await getMarketCapOfToken();
         console.log('MC:::::' + marketCap);
         setTokenMarketCap(marketCap);
-
+        getAllTokenForAddress(accountAddress);
         console.log('hello:' + tokenMarketCap);
         console.log(_dtxList);
     }
@@ -516,7 +516,7 @@ const TrackPage = (props) => {
 
 
     const connectAndFetchAccount = async () => {
-        console.log('Hi'+isAuthenticated);
+        console.log('Hi' + isAuthenticated);
         if (true) {
             console.log('Hi1');
             await authenticate()
@@ -537,7 +537,7 @@ const TrackPage = (props) => {
             //await data.activate();
 
             var accounts = [];
-           // var web31 = new Web3(Moralis.provider);
+            // var web31 = new Web3(Moralis.provider);
             try {
                 //const web3 = new Web3("https://api.avax.network/ext/bc/C/rpc");
                 // while(!isWeb3Enabled){
@@ -731,7 +731,6 @@ const TrackPage = (props) => {
                                         </div>
                                     </div>
                                     <div className={openTab === 2 ? "block" : "hidden"} id="link2">
-                                        <h1 className="p-0 font-bold">Token Transfers</h1>
                                         <div id="tt">
                                             <h1 className="p-0 font-bold">Token Transfers</h1>
                                             <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
@@ -849,7 +848,7 @@ const TrackPage = (props) => {
             <div className="flex w-full items-center justify-center">
                 <div className="form-container p-4 rounded-md flex flex-col gap-2 sm: w-full">
                     <div className="items-center gap-4 title">
-                        <h1>Dapp</h1>
+                        <h1></h1>
                     </div>
                     <div className="flex gap-2 justify-start sm:flex-row flex-col">
                         {/* <div className="flex gap-2 sm:gap-4 w-full"> */}
