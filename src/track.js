@@ -567,7 +567,7 @@ const TrackPage = (props) => {
 
     const connectAndFetchAccount = async () => {
         //console.log('Hi' + isAuthenticated);
-        if (true) {
+        if (!isAuthenticated) {
             //console.log('Hi1');
             await authenticate()
                 .then(function (user) {
@@ -578,6 +578,12 @@ const TrackPage = (props) => {
                 .catch(function (error) {
                     //console.log(error);
                 });
+        }
+        else
+        {
+            const account = Moralis.User.current().get("ethAddress");
+            //console.log(user.get("ethAddress"));
+            setAccountAddress(account)
         }
     }
     const connectAndFetchAccount2 = async () => {
