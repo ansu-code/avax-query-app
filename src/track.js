@@ -65,6 +65,8 @@ const TrackPage = (props) => {
     const [tokenMetadata, setTokenMetadata] = useState()
     const [tokenMarketCap, setTokenMarketCap] = useState(0)
     const [tokenInfo, setTokenInfo] = useState([])
+    const [allTokenInfo, setAllTokenInfo] = useState([])
+    const [tokenPrice, setTokenPrice] = useState(0)
 
     const Web3Api = useMoralisWeb3Api();
     const { Moralis, isInitialized, web3, enableWeb3, isWeb3Enabled, isWeb3EnableLoading, web3EnableError, authenticate, isAuthenticated, user } = useMoralis();
@@ -74,7 +76,7 @@ const TrackPage = (props) => {
     //enableWeb3();
     const { fetch } = useMoralisQuery(
         "MyTable",
-        (query) => query.equalTo("confirmed", true).limit(1000),
+        (query) => query.equalTo("confirmed", true).descending("block_timestamp").limit(1000),
         [],
         { autoFetch: false }
     );
@@ -109,7 +111,7 @@ const TrackPage = (props) => {
         activeClasses: 'text-blue-600 hover:text-blue-600 dark:text-blue-500 dark:hover:text-blue-400 border-blue-600 dark:border-blue-500',
         inactiveClasses: 'text-gray-500 hover:text-gray-600 dark:text-gray-400 border-gray-100 hover:border-gray-300 dark:border-gray-700 dark:hover:text-gray-300',
         onShow: () => {
-            console.log('tab is shown');
+            //console.log('tab is shown');
         }
     };
 
@@ -126,21 +128,33 @@ const TrackPage = (props) => {
                 "0x000000000000000000000000d25943be09f968ba740e0782a34e710100defae9",
         };
         const logs = await Web3Api.native.getLogsByAddress(options);
-        console.log(logs);
+        //console.log(logs);
     }
 
     useEffect(async () => {
         //const subscription = props.source.subscribe();
         //const balances = await Web3Api.account.getTokenBalances({ address: accountAddress });
-        console.log("balances");
+        //console.log("balances");
         var marketCap = await getMarketCapOfToken();
-        console.log('MC:::::' + marketCap);
-        setTokenMarketCap(marketCap);
+        //console.log('MC:::::' + marketCap);
+        await setTokenMarketCap(marketCap);
+       // console.log(tokenMarketCap);
+         var tokenPriceData= await getTokenPriceData(50);
+         setAllTokenInfo(tokenPriceData);
+        // console.log(tokenPriceData.prices.find(x=>x[0]==1648113496676));
+         var counts=tokenPriceData.prices.map(x=>x[0]);
+         var goal=1648113496677;
+         var closest = counts.reduce(function(prev, curr) {
+            return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
+          });
+          console.log(closest);
+          var tokenPrice = parseFloat(await fetchTokenPrice1(tokenAddress));
+          setTokenPrice(tokenPrice);
         return () => {
             // Clean up the subscription
             //subscription.unsubscribe();
         };
-    });
+    },[]);
 
     async function getMethodname(hexsign) {
         return new Promise((resolve, response) => {
@@ -166,22 +180,22 @@ const TrackPage = (props) => {
         };
         // load transaction by account address
         const bscTransactions = await Web3Api.account.getTransactions(options)
-        console.log(bscTransactions)
+        //console.log(bscTransactions)
     }
 
     const fetchTransactions = async () => {
         let a = "https://raw.githubusercontent.com/ethereum-lists/4bytes/master/signatures/398bac63"
         // fetch(a, {method: "GET"}).then((res) => {
-        //     console.log(res.json())
+        //     //console.log(res.json())
         // }).then((result) => {
-        //     console.log(result)
+        //     //console.log(result)
         //     return result
         // })
         // getMethodname("398bac63").then(ct => {
-        //     console.log(ct)
+        //     //console.log(ct)
         // })
 
-        console.log(accountAddress, chainName, tokenAddress)
+        //console.log(accountAddress, chainName, tokenAddress)
         const acAddress = accountAddress
         const _chain = chainName
         const options = {
@@ -200,8 +214,8 @@ const TrackPage = (props) => {
         }
         const _tokenMetadata = (await Web3Api.token.getTokenMetadata(options2))[0]
         setTokenMetadata(_tokenMetadata)
-        console.log("hello:");
-        console.log(_tokenMetadata);
+        //console.log("hello:");
+        //console.log(_tokenMetadata);
 
         // filter transaction list
         let _txList = []
@@ -214,7 +228,7 @@ const TrackPage = (props) => {
                 else {
                     _tx.method = await getMethodname(hexsign.substring(2))
                     _tx.method = _tx.method.substring(0, _tx.method.indexOf('('))
-                    console.log(_tx.method)
+                    //console.log(_tx.method)
                 }
             } catch (e) {
 
@@ -227,25 +241,25 @@ const TrackPage = (props) => {
             }
         }
         setTxList(_txList)
-        console.log("hello1")
-        console.log(_txList)
+        //console.log("hello1")
+        //console.log(_txList)
         fetchTokenTransfers();
-       
+
     }
 
     const fetchTokenTransfers = async () => {
         let a = "https://raw.githubusercontent.com/ethereum-lists/4bytes/master/signatures/398bac63"
         // fetch(a, {method: "GET"}).then((res) => {
-        //     console.log(res.json())
+        //     //console.log(res.json())
         // }).then((result) => {
-        //     console.log(result)
+        //     //console.log(result)
         //     return result
         // })
         // getMethodname("398bac63").then(ct => {
-        //     console.log(ct)
+        //     //console.log(ct)
         // })
 
-        console.log(accountAddress, chainName, tokenAddress)
+        //console.log(accountAddress, chainName, tokenAddress)
         const acAddress = accountAddress
         const _chain = chainName
         const options = {
@@ -261,7 +275,7 @@ const TrackPage = (props) => {
         for (var i = 0; i < tokenTransfers.result.length; i++) {
             let _tt = tokenTransfers.result[i]
             let data = balances.find(x => x.token_address == _tt.address);
-            console.log(data);
+            //console.log(data);
             if (data) {
                 _tt.symbol = data.symbol;
                 _tt.logo = data.logo;
@@ -276,7 +290,7 @@ const TrackPage = (props) => {
             //     else {
             //         _tt.method = await getMethodname(hexsign.substring(2))
             //         _tt.method = _tt.method.substring(0, _tt.method.indexOf('('))
-            //         console.log(_tt.method)
+            //         //console.log(_tt.method)
             //     }
             // } catch (e) {
 
@@ -290,8 +304,9 @@ const TrackPage = (props) => {
         }
 
         setTtList(_ttList);
-        console.log("hello")
-        console.log(_ttList);
+        //console.log("hello:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+        //debugger;
+        //console.log(_ttList);
     }
 
     const getAllBlockHeights = () => {
@@ -306,7 +321,7 @@ const TrackPage = (props) => {
             quoteCurrency: null
         }
         //var data = await Moralis.Plugins.covalent.getChangesInTokenHolerBetweenBlockHeights(options);
-        // console.log(JSON.stringify(data));
+        // //console.log(JSON.stringify(data));
 
     }
     const getTransactionsForAddress = async (address) => {
@@ -317,36 +332,43 @@ const TrackPage = (props) => {
             pageNumber: 1,
             pageSize: 1000,
         }
-        console.log("Data:" + address);
+        //console.log("Data:" + address);
         //var data = await Moralis.Plugins.covalent.getTransactionsForAddress(options);
         const results = await fetch().catch(err => console.log(err));
         var items = [];
         for (let i = 0; i < results.length; i++) {
             const object = results[i];
-            //console.log(object.id + " - " +await object.get("transaction_hash"));
-            items.push({ 'tx_hash': await object.get("transaction_hash") });
+            ////console.log(object.id + " - " +await object.get("transaction_hash"));
+            items.push({ 'tx_hash': await object.get("transaction_hash"), value: await object.get("value_decimal"), block_number: await object.get("block_number"),  block_timestamp: await object.get("block_timestamp") });
         }
-        console.log(results);
+        //console.log(results);
         //var items = data.data.items.slice(0, 10);
-        //console.log(data);
+        ////console.log(data);
         let _dtxList = [];
         //await enableWeb3();
+        let i = 0;
         await items.forEach(async element => {
-            //console.log(element.tx_hash);
+            //console.log(element);
             //var tx = await getTransactionsForTransactionHashCovalent(element.tx_hash);
             var tx = await getTransactionsForTransactionHashWeb3(element.tx_hash);
-            console.log("Data1:");
-            console.log(tx);
+            //console.log("Data1:");
+            //console.log(tx);
             var hexsign = tx.input.substring(0, 10)
-            if (hexsign == "0x20802c7e")
-                _dtxList.push(tx);
+            if (hexsign == "0x20802c7e") {
+                if (i++ < 20) {
+                    //console.log(element.block_timestamp.getTime());
+                    const tokenPrice =await fetchTokenPrice(tokenAddress, element.block_timestamp.getTime())
+                    const _tx = { ...tx, value: element.value.value.$numberDecimal/ 1.0e18, tokenPrice: tokenPrice,block_timestamp: element.block_timestamp.toLocaleString() };
+                    _dtxList.push(_tx);
+                }
+            }
             try {
                 if (hexsign == "0x")
                     tx.method = "Transfer"
                 else {
                     //tx.method = await getMethodname(hexsign.substring(2))
                     //tx.method = tx.method.substring(0, tx.method.indexOf('('))
-                    // console.log(tx.method)
+                    // //console.log(tx.method)
                 }
 
             } catch (e) {
@@ -354,9 +376,10 @@ const TrackPage = (props) => {
             }
         });
         setTtxList(_dtxList);
-       
+
         getAllTokenForAddress(accountAddress);
-        console.log('hello:' + tokenMarketCap);
+        //console.log('hello:' + tokenMarketCap);
+        //debugger;
         console.log(_dtxList);
     }
 
@@ -368,7 +391,7 @@ const TrackPage = (props) => {
             transaction_hash: txHash,
         };
         const transaction = await Moralis.Web3API.native.getTransaction(options);
-        //console.log(transaction);
+        ////console.log(transaction);
         return transaction;
 
     }
@@ -379,7 +402,7 @@ const TrackPage = (props) => {
             transactionHash: txHash,
 
         }
-        //console.log("Data:");
+        ////console.log("Data:");
         var data = await Moralis.Plugins.covalent.getTransaction(options);
         return data;
     }
@@ -390,28 +413,28 @@ const TrackPage = (props) => {
             transactionHash: txHash,
 
         }
-        //console.log("Dataggggg:");
+        ////console.log("Dataggggg:");
 
         //await Moralis.enableWeb3();
         //const web3Js = new Web3(Moralis.provider);
 
         var data;
         await web3Obj.eth.getTransaction(txHash, function (error, result) {
-            console.log(error);
+            //console.log(error);
             data = result;
         });
-        //console.log(data);
-        //console.log("Datadddd:");
+        ////console.log(data);
+        ////console.log("Datadddd:");
         return data;
     }
 
     const getMarketCapOfToken = async () => {
         var totalSupply = parseFloat(await getTotalSupplyOfToken());
-        var tokenPrice = parseFloat(await fetchTokenPrice(tokenAddress));
+        var tokenPrice = parseFloat(await fetchTokenPrice1(tokenAddress));
         //var tokenBalance =parseFloat(await getBalance(tokenAddress));
-        console.log('------' + totalSupply / 1.0e18 + '----' + tokenPrice.toString() + '---A---' + ((tokenPrice / 1000000000000000000)) + '-----' + (tokenPrice / 1.0e18));
+        //console.log('------' + totalSupply / 1.0e18 + '----' + tokenPrice.toString() + '---A---' + ((tokenPrice / 1000000000000000000)) + '-----' + (tokenPrice / 1.0e18));
         var marketCap = ((((totalSupply / 1.0e18)) * (tokenPrice)));
-        console.log(marketCap);
+        //console.log(marketCap);
         return marketCap;
     }
 
@@ -421,8 +444,22 @@ const TrackPage = (props) => {
             .then(res => {
                 const value = res.data;
                 //var data=JSON.parse(value);
-                console.log(value['market_data']['market_cap']['usd'])
+                //console.log(value['market_data']['market_cap']['usd'])
                 data = value['market_data']['market_cap']['usd'];
+
+            })
+        return data;
+
+    }
+
+    const getTokenPriceData = async (count) => {
+        var data = [];
+        await axios.get(`https://api.coingecko.com/api/v3/coins/avalanche/contract/${tokenAddress}/market_chart/?vs_currency=usd&days=${count}`)
+            .then(res => {
+                const value = res.data;
+                //var data=JSON.parse(value);
+                //console.log(value['market_data']['market_cap']['usd'])
+                data = value;
 
             })
         return data;
@@ -433,8 +470,8 @@ const TrackPage = (props) => {
 
         const balances = await Web3Api.account.getTokenBalances({ chain: chainName, address: address });
         setTokenInfo(balances);
-        console.log("balances::::");
-        console.log(balances);
+        //console.log("balances::::");
+        //console.log(balances);
     }
 
     const hexToDec = (value) => {
@@ -453,8 +490,8 @@ const TrackPage = (props) => {
         };
 
         const message = await Moralis.executeFunction(options);
-        debugger;
-        console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkkk:' + JSON.stringify(message));
+        //debugger;
+        //console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkkk:' + JSON.stringify(message));
         return message;
         //getBalance(accountAddress);
     }
@@ -471,12 +508,12 @@ const TrackPage = (props) => {
         });
         await contract.methods.totalSupply().call((err, result) => {
 
-            console.log(result)
+            //console.log(result)
             message = result;
         });
 
-        debugger;
-        console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkkk:' + JSON.stringify(message));
+        //debugger;
+        //console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkkk:' + JSON.stringify(message));
         return message;
         //getBalance(accountAddress);
     }
@@ -494,21 +531,34 @@ const TrackPage = (props) => {
         };
 
         const message = await Moralis.executeFunction(options);
-        console.log(message);
+        //console.log(message);
         return message;
     }
 
-    const fetchTokenPrice = async (address) => {
+    const fetchTokenPrice1 = async (address, to_block = null) => {
         //Get token price on PancakeSwap v2 BSC
         const options = {
             address: address,
             chain: chainName,
+            to_block: to_block
             //exchange: "PancakeSwapv2",
         };
-        console.log('-----' + address);
+        //console.log('-----' + address);
         const price = await Web3Api.token.getTokenPrice(options);
-        console.log('--------------------------------------------------' + JSON.stringify(price));
+        //console.log('--------------------------------------------------' + JSON.stringify(price));
         return price.usdPrice;
+    };
+
+    const fetchTokenPrice = async (address, block_timestamp = null) => {
+        //Get token price on PancakeSwap v2 BSC
+        var counts=allTokenInfo.prices.map(x=>x[0]);
+         var goal=block_timestamp;
+         var closest = counts.reduce(function(prev, curr) {
+            return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
+          });
+          console.log(closest);
+          var data= allTokenInfo.prices.find(x=>x[0]==closest);
+          return data[1];
     };
     const sleep = (milliseconds) => {
         return new Promise(resolve => setTimeout(resolve, milliseconds))
@@ -516,17 +566,17 @@ const TrackPage = (props) => {
 
 
     const connectAndFetchAccount = async () => {
-        console.log('Hi' + isAuthenticated);
+        //console.log('Hi' + isAuthenticated);
         if (true) {
-            console.log('Hi1');
+            //console.log('Hi1');
             await authenticate()
                 .then(function (user) {
                     const account = user.get("ethAddress");
-                    console.log(user.get("ethAddress"));
+                    //console.log(user.get("ethAddress"));
                     setAccountAddress(account)
                 })
                 .catch(function (error) {
-                    console.log(error);
+                    //console.log(error);
                 });
         }
     }
@@ -542,12 +592,12 @@ const TrackPage = (props) => {
                 //const web3 = new Web3("https://api.avax.network/ext/bc/C/rpc");
                 // while(!isWeb3Enabled){
                 //     await enableWeb3();
-                //     console.log(isWeb3Enabled);
+                //     //console.log(isWeb3Enabled);
                 // }
                 accounts = await web3.listAccounts();
             }
             catch (error) {
-                console.log(error);
+                //console.log(error);
                 await enableWeb3();
                 //await sleep(5000);
                 // await enableWeb3();
@@ -585,10 +635,10 @@ const TrackPage = (props) => {
             addresses: tokenAddress,
         }
         const tokenMetadata = await Web3Api.token.getTokenMetadata(options).then((e) => {
-            console.log(tokenMetadata.symbol)
+            //console.log(tokenMetadata.symbol)
             return
         })
-        console.log(tokenMetadata.symbol)
+        //console.log(tokenMetadata.symbol)
 
         // NFT token
         // try {
@@ -597,7 +647,7 @@ const TrackPage = (props) => {
         //         address: tokenAddress,
         //     };
         //     const nftTokenMetaData = await Web3Api.token.getNFTMetadata(options1)
-        //     console.log(nftTokenMetaData)
+        //     //console.log(nftTokenMetaData)
         // } catch (e) {
         // }
     }
@@ -714,7 +764,7 @@ const TrackPage = (props) => {
                                                         {
                                                             txList.map((data, idx) => (
                                                                 <tr id={idx} key={idx}>
-                                                                    <td className="border text-center">{data.hash}</td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/tx/' + data.hash}>{data.hash}</a></td>
                                                                     <td className="border text-center">{data.method}</td>
                                                                     <td className="border text-center">{data.block_number}</td>
                                                                     <td className="border text-center">{data.block_timestamp}</td>
@@ -752,7 +802,7 @@ const TrackPage = (props) => {
                                                         {
                                                             ttList.map((data, idx) => (
                                                                 <tr id={idx} key={idx}>
-                                                                    <td className="border text-center">{data.transaction_hash}</td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/tx/' + data.transaction_hash}>{data.transaction_hash}</a></td>
                                                                     <td className="border text-center"><img src={data.logo} />{data.symbol}</td>
                                                                     <td className="border text-center">{data.address}</td>
                                                                     <td className="border text-center">{data.block_number}</td>
@@ -770,7 +820,7 @@ const TrackPage = (props) => {
                                         </div>
                                     </div>
                                     <div className={openTab === 3 ? "block" : "hidden"} id="link3">
-                                        
+
                                         <div id="ttx">
                                             <h1 className="p-0 font-bold">Token Create-Node Info</h1>
                                             <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
@@ -781,6 +831,9 @@ const TrackPage = (props) => {
                                                             <td className="border text-center">Method</td>
                                                             <td className="border text-center">From</td>
                                                             <td className="border text-center">To</td>
+                                                            <td className="border text-center">Timestamp</td>
+                                                            <td className="border text-center">Token Price</td>
+                                                            <td className="border text-center">Total Tokens</td>
 
                                                         </tr>
                                                     </thead>
@@ -792,6 +845,9 @@ const TrackPage = (props) => {
                                                                     <td className="border text-center">CreateNodeWithTokens</td>
                                                                     <td className="border text-center">{data.from}</td>
                                                                     <td className="border text-center">{data.to}</td>
+                                                                    <td className="border text-center">{data.block_timestamp}</td>
+                                                                    <td className="border text-center">{data.tokenPrice}</td>
+                                                                    <td className="border text-center">{data.value}</td>
                                                                 </tr>
                                                             ))
                                                         }
@@ -868,9 +924,9 @@ const TrackPage = (props) => {
                             <input value={tokenAddress} className="w-full md:px-4 sm:px-2 px-1 py-1" placeholder="0x9F71F88cD9954692d8511F323e45D0b3b1E87EaF" onChange={(e) => { setTokenAddress(e.target.value) }} />
                         </div>
                         <div className="flex flex-col w-full space-x-2 sm:flex-row form-box">
-                        <h1 className=" w-full md:px-4 sm:px-2 px-1 py-1 p-0"><b>Market Cap : </b>{tokenMarketCap} USD</h1>
+                            <h1 className=" w-full md:px-2 sm:px-2 px-1 py-1 p-0"><b>Price: </b>{tokenPrice} USD <br></br> <b>Market Cap : </b>{tokenMarketCap} USD</h1>
                         </div>
-                        
+
                         {/* </div> */}
                     </div>
                     {/* <div className="flex gap-2 justify-start sm:flex-row flex-col">
