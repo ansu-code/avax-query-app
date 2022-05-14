@@ -76,7 +76,7 @@ const TrackPage = (props) => {
     //enableWeb3();
     const { fetch } = useMoralisQuery(
         "MyTable",
-        (query) => query.equalTo("confirmed", true).descending("block_timestamp").limit(1000),
+        (query) => query.equalTo("confirmed", true).descending("block_timestamp").limit(2000),
         [],
         { autoFetch: false }
     );
@@ -951,7 +951,7 @@ const TrackPage = (props) => {
                             <input value={tokenAddress} className="w-full md:px-4 sm:px-2 px-1 py-1" placeholder="0x9F71F88cD9954692d8511F323e45D0b3b1E87EaF" onChange={(e) => { setTokenAddress(e.target.value) }} />
                         </div>
                         <div className="flex flex-col w-full space-x-2 sm:flex-row form-box">
-                            <h1 className=" w-full md:px-1 sm:px-2 px-1 py-1 p-0"><b>Price: </b>${tokenPrice}  <b>Market Cap : </b>${tokenMarketCap}</h1>
+                            <h1 className=" w-full md:px-0 sm:px-2 px-1 py-1 p-0 text-blue"><b>Price: </b>${tokenPrice} <b>Market Cap : </b>${tokenMarketCap}</h1>
                         </div>
 
                         {/* </div> */}
