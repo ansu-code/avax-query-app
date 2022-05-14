@@ -138,23 +138,23 @@ const TrackPage = (props) => {
         var marketCap = await getMarketCapOfToken();
         //console.log('MC:::::' + marketCap);
         await setTokenMarketCap(marketCap);
-       // console.log(tokenMarketCap);
-         var tokenPriceData= await getTokenPriceData(50);
-         setAllTokenInfo(tokenPriceData);
+        // console.log(tokenMarketCap);
+        var tokenPriceData = await getTokenPriceData(50);
+        setAllTokenInfo(tokenPriceData);
         // console.log(tokenPriceData.prices.find(x=>x[0]==1648113496676));
-         var counts=tokenPriceData.prices.map(x=>x[0]);
-         var goal=1648113496677;
-         var closest = counts.reduce(function(prev, curr) {
+        var counts = tokenPriceData.prices.map(x => x[0]);
+        var goal = 1648113496677;
+        var closest = counts.reduce(function (prev, curr) {
             return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
-          });
-          console.log(closest);
-          var tokenPrice = parseFloat(await fetchTokenPrice1(tokenAddress));
-          setTokenPrice(tokenPrice);
+        });
+        console.log(closest);
+        var tokenPrice = parseFloat(await fetchTokenPrice1(tokenAddress));
+        setTokenPrice(tokenPrice);
         return () => {
             // Clean up the subscription
             //subscription.unsubscribe();
         };
-    },[]);
+    }, []);
 
     async function getMethodname(hexsign) {
         return new Promise((resolve, response) => {
@@ -184,6 +184,7 @@ const TrackPage = (props) => {
     }
 
     const fetchTransactions = async () => {
+        startLoading();
         let a = "https://raw.githubusercontent.com/ethereum-lists/4bytes/master/signatures/398bac63"
         // fetch(a, {method: "GET"}).then((res) => {
         //     //console.log(res.json())
@@ -243,7 +244,8 @@ const TrackPage = (props) => {
         setTxList(_txList)
         //console.log("hello1")
         //console.log(_txList)
-        fetchTokenTransfers();
+        await fetchTokenTransfers();
+        stopLoading();
 
     }
 
@@ -324,7 +326,22 @@ const TrackPage = (props) => {
         // //console.log(JSON.stringify(data));
 
     }
+
+    const startLoading = () => {
+        const child = document.createElement("div");
+        child.id = "requestOverlay";
+        child.className = "request-overlay";
+        document.body.appendChild(child);
+    }
+
+
+    const stopLoading = () => {
+        var element = document.getElementById("requestOverlay");
+        element.parentNode.removeChild(element);
+    }
+
     const getTransactionsForAddress = async (address) => {
+        startLoading();
         const options = {
             chainId: 43114,
             address: address,
@@ -339,7 +356,7 @@ const TrackPage = (props) => {
         for (let i = 0; i < results.length; i++) {
             const object = results[i];
             ////console.log(object.id + " - " +await object.get("transaction_hash"));
-            items.push({ 'tx_hash': await object.get("transaction_hash"), value: await object.get("value_decimal"), block_number: await object.get("block_number"),  block_timestamp: await object.get("block_timestamp") });
+            items.push({ 'tx_hash': await object.get("transaction_hash"), value: await object.get("value_decimal"), block_number: await object.get("block_number"), block_timestamp: await object.get("block_timestamp") });
         }
         //console.log(results);
         //var items = data.data.items.slice(0, 10);
@@ -357,8 +374,8 @@ const TrackPage = (props) => {
             if (hexsign == "0x20802c7e") {
                 if (i++ < 20) {
                     //console.log(element.block_timestamp.getTime());
-                    const tokenPrice =await fetchTokenPrice(tokenAddress, element.block_timestamp.getTime())
-                    const _tx = { ...tx, value: element.value.value.$numberDecimal/ 1.0e18, tokenPrice: tokenPrice,block_timestamp: element.block_timestamp.toLocaleString() };
+                    const tokenPrice = await fetchTokenPrice(tokenAddress, element.block_timestamp.getTime())
+                    const _tx = { ...tx, value: element.value.value.$numberDecimal / 1.0e18, tokenPrice: tokenPrice, block_timestamp: element.block_timestamp.toLocaleString() };
                     _dtxList.push(_tx);
                 }
             }
@@ -381,6 +398,7 @@ const TrackPage = (props) => {
         //console.log('hello:' + tokenMarketCap);
         //debugger;
         console.log(_dtxList);
+        stopLoading();
     }
 
     const getTransactionsForTransactionHash = async (txHash) => {
@@ -551,14 +569,14 @@ const TrackPage = (props) => {
 
     const fetchTokenPrice = async (address, block_timestamp = null) => {
         //Get token price on PancakeSwap v2 BSC
-        var counts=allTokenInfo.prices.map(x=>x[0]);
-         var goal=block_timestamp;
-         var closest = counts.reduce(function(prev, curr) {
+        var counts = allTokenInfo.prices.map(x => x[0]);
+        var goal = block_timestamp;
+        var closest = counts.reduce(function (prev, curr) {
             return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
-          });
-          console.log(closest);
-          var data= allTokenInfo.prices.find(x=>x[0]==closest);
-          return data[1];
+        });
+        console.log(closest);
+        var data = allTokenInfo.prices.find(x => x[0] == closest);
+        return data[1];
     };
     const sleep = (milliseconds) => {
         return new Promise(resolve => setTimeout(resolve, milliseconds))
@@ -566,6 +584,7 @@ const TrackPage = (props) => {
 
 
     const connectAndFetchAccount = async () => {
+        startLoading();
         //console.log('Hi' + isAuthenticated);
         if (!isAuthenticated) {
             //console.log('Hi1');
@@ -579,12 +598,12 @@ const TrackPage = (props) => {
                     //console.log(error);
                 });
         }
-        else
-        {
+        else {
             const account = Moralis.User.current().get("ethAddress");
             //console.log(user.get("ethAddress"));
             setAccountAddress(account)
         }
+        stopLoading();
     }
     const connectAndFetchAccount2 = async () => {
         if (window.ethereum) {
@@ -723,7 +742,7 @@ const TrackPage = (props) => {
                                     href="#link3"
                                     role="tablist"
                                 >
-                                    Token Create-Node Info
+                                    Created Nodes Info
                                 </a>
                             </li>
                             <li className="-mb-px mr-2 last:mr-0 flex-auto text-center">
@@ -756,9 +775,9 @@ const TrackPage = (props) => {
                                                 <table className="w-full border-collapse border app-table">
                                                     <thead>
                                                         <tr>
-                                                            <td className="border text-center">Transaction Hash</td>
+                                                            <td className="border text-center">Tx Hash</td>
                                                             <td className="border text-center">Method</td>
-                                                            <td className="border text-center">Block</td>
+                                                            <td className="border text-center">Block #</td>
                                                             <td className="border text-center">Date</td>
                                                             <td className="border text-center">From</td>
                                                             <td className="border text-center">To</td>
@@ -770,7 +789,7 @@ const TrackPage = (props) => {
                                                         {
                                                             txList.map((data, idx) => (
                                                                 <tr id={idx} key={idx}>
-                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/tx/' + data.hash}>{data.hash}</a></td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/tx/' + data.hash}>{data.hash.substring(0,10)}</a></td>
                                                                     <td className="border text-center">{data.method}</td>
                                                                     <td className="border text-center">{data.block_number}</td>
                                                                     <td className="border text-center">{data.block_timestamp}</td>
@@ -793,10 +812,10 @@ const TrackPage = (props) => {
                                                 <table className="w-full border-collapse border app-table">
                                                     <thead>
                                                         <tr>
-                                                            <td className="border text-center">Transaction Hash</td>
-                                                            <td className="border text-center">Token Symbol</td>
+                                                            <td className="border text-center">Tx Hash</td>
+                                                            <td className="border text-center">Symbol</td>
                                                             <td className="border text-center">Address</td>
-                                                            <td className="border text-center">Block Number</td>
+                                                            <td className="border text-center">Block #</td>
                                                             <td className="border text-center">Date</td>
                                                             <td className="border text-center">From</td>
                                                             <td className="border text-center">To</td>
@@ -808,7 +827,7 @@ const TrackPage = (props) => {
                                                         {
                                                             ttList.map((data, idx) => (
                                                                 <tr id={idx} key={idx}>
-                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/tx/' + data.transaction_hash}>{data.transaction_hash}</a></td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/tx/' + data.transaction_hash}>{data.transaction_hash.substring(0,10)}</a></td>
                                                                     <td className="border text-center"><img src={data.logo} />{data.symbol}</td>
                                                                     <td className="border text-center">{data.address}</td>
                                                                     <td className="border text-center">{data.block_number}</td>
@@ -828,18 +847,19 @@ const TrackPage = (props) => {
                                     <div className={openTab === 3 ? "block" : "hidden"} id="link3">
 
                                         <div id="ttx">
-                                            <h1 className="p-0 font-bold">Token Create-Node Info</h1>
+                                            <h1 className="p-0 font-bold">Created Nodes Info</h1>
                                             <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
                                                 <table className="w-full border-collapse border app-table">
                                                     <thead>
                                                         <tr>
-                                                            <td className="border text-center">Transaction Hash</td>
+                                                            <td className="border text-center">Tx Hash</td>
+                                                            <td className="border text-center">Timestamp</td>
+                                                            <td className="border text-center">Price</td>
+                                                            <td className="border text-center">Tokens</td>
                                                             <td className="border text-center">Method</td>
                                                             <td className="border text-center">From</td>
                                                             <td className="border text-center">To</td>
-                                                            <td className="border text-center">Timestamp</td>
-                                                            <td className="border text-center">Token Price</td>
-                                                            <td className="border text-center">Total Tokens</td>
+                                                            
 
                                                         </tr>
                                                     </thead>
@@ -847,13 +867,14 @@ const TrackPage = (props) => {
                                                         {
                                                             ttxList.map((data, idx) => (
                                                                 <tr id={idx} key={idx}>
-                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/tx/' + data.hash}>{data.hash}</a></td>
-                                                                    <td className="border text-center">CreateNodeWithTokens</td>
-                                                                    <td className="border text-center">{data.from}</td>
-                                                                    <td className="border text-center">{data.to}</td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/tx/' + data.hash}>{data.hash.substring(0,10)}</a></td>
                                                                     <td className="border text-center">{data.block_timestamp}</td>
                                                                     <td className="border text-center">{data.tokenPrice}</td>
                                                                     <td className="border text-center">{data.value}</td>
+                                                                    <td className="border text-center">CreateNodeWithTokens</td>
+                                                                    <td className="border text-center">{data.from}</td>
+                                                                    <td className="border text-center">{data.to}</td>
+                                                                   
                                                                 </tr>
                                                             ))
                                                         }
@@ -881,7 +902,7 @@ const TrackPage = (props) => {
                                                         {
                                                             tokenInfo.map((data, idx) => (
                                                                 <tr id={idx} key={idx}>
-                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/token/' + data.token_address}>{data.token_address}</a></td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/token/' + data.token_address}>{data.token_address.substring(0,10)}</a></td>
                                                                     <td className="border text-center"><img src={data.thumbnail} />{data.symbol}</td>
                                                                     <td className="border text-center">{data.name}</td>
                                                                     <td className="border text-center">{data.balance}</td>
