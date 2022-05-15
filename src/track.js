@@ -927,7 +927,7 @@ const TrackPage = (props) => {
                                                                     <td className="border text-center">{parseInt(data.value) / 10 ** parseInt(tokenMetadata != null ? tokenMetadata.decimals : 1)}</td>
                                                                     <td className="border text-center">{data.to_address === accountAddress.toLowerCase() ? 'IN' : "OUT"}</td>
                                                                     <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/token/' + data.address}>{data.address.substring(0, 10)}</a></td>
-                                                                    <td className="border text-center"><img src={data.logo} />{data.symbol}</td>
+                                                                    <td className="border text-center"><img src={data.logo} />{data.symbol.substring(0,10)}</td>
                                                                     <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/block/' + data.block_number}>{data.block_number}</a></td>
 
                                                                 </tr>
