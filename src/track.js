@@ -67,6 +67,8 @@ const TrackPage = (props) => {
     const [tokenInfo, setTokenInfo] = useState([])
     const [allTokenInfo, setAllTokenInfo] = useState([])
     const [tokenPrice, setTokenPrice] = useState(0)
+    const [tokenHolders, setTokenHolders] = useState([])
+    const [totalSupply, setTotalSupply] = useState([])
 
     const Web3Api = useMoralisWeb3Api();
     const { Moralis, isInitialized, web3, enableWeb3, isWeb3Enabled, isWeb3EnableLoading, web3EnableError, authenticate, logout, isAuthenticated, user } = useMoralis();
@@ -147,7 +149,7 @@ const TrackPage = (props) => {
         var closest = counts.reduce(function (prev, curr) {
             return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
         });
-        console.log(closest);
+        //console.log(closest);
         var tokenPrice = parseFloat(await fetchTokenPrice1(tokenAddress));
         setTokenPrice(tokenPrice);
         return () => {
@@ -185,7 +187,7 @@ const TrackPage = (props) => {
 
     const fetchTransactions = async () => {
         startLoading();
-        let a = "https://raw.githubusercontent.com/ethereum-lists/4bytes/master/signatures/398bac63"
+        //let a = "https://raw.githubusercontent.com/ethereum-lists/4bytes/master/signatures/398bac63"
         // fetch(a, {method: "GET"}).then((res) => {
         //     //console.log(res.json())
         // }).then((result) => {
@@ -236,22 +238,26 @@ const TrackPage = (props) => {
             }
             //_tx.method = await getMethodname(hexsign)
             let d = new Date(_tx.block_timestamp)
-            if (d > stime && d < etime) {
+            //if (d > stime && d < etime) {
                 //if (_tx.from_address == tokenAddress || _tx.to_address == tokenAddress)
+                _tx.block_timestamp = d.toLocaleString();
                 _txList.push(_tx)
-            }
+            //}
         }
         setTxList(_txList)
         //console.log("hello1")
         //console.log(_txList)
         await getTransactionsForAddress();
         await fetchTokenTransfers();
+        const data = await getTokenHoldersCovalent();
+        setTokenHolders(data);
+        //console.log(data);
         stopLoading();
 
     }
 
     const fetchTokenTransfers = async () => {
-        let a = "https://raw.githubusercontent.com/ethereum-lists/4bytes/master/signatures/398bac63"
+        //let a = "https://raw.githubusercontent.com/ethereum-lists/4bytes/master/signatures/398bac63"
         // fetch(a, {method: "GET"}).then((res) => {
         //     //console.log(res.json())
         // }).then((result) => {
@@ -273,7 +279,7 @@ const TrackPage = (props) => {
         };
         // load transaction by account address
         const tokenTransfers = await Web3Api.account.getTokenTransfers(options)
-        const balances = await Web3Api.account.getTokenBalances({ address: accountAddress });
+        const balances = await Web3Api.account.getTokenBalances({ chain: chainName, address: accountAddress });
         let _ttList = [];
         for (var i = 0; i < tokenTransfers.result.length; i++) {
             let _tt = tokenTransfers.result[i]
@@ -300,10 +306,11 @@ const TrackPage = (props) => {
             // }
             //_tx.method = await getMethodname(hexsign)
             let d = new Date(_tt.block_timestamp)
-            if (d > stime && d < etime) {
+           // if (d > stime && d < etime) {
                 //if (_tx.from_address == tokenAddress || _tx.to_address == tokenAddress)
+                _tt.block_timestamp = d.toLocaleString();
                 _ttList.push(_tt)
-            }
+            //}
         }
 
         setTtList(_ttList);
@@ -398,7 +405,7 @@ const TrackPage = (props) => {
         getAllTokenForAddress(accountAddress);
         //console.log('hello:' + tokenMarketCap);
         //debugger;
-        console.log(_dtxList);
+        //console.log(_dtxList);
         stopLoading();
     }
 
@@ -426,6 +433,18 @@ const TrackPage = (props) => {
         return data;
     }
 
+    const getTokenHoldersCovalent = async () => {
+        const options = {
+            chainId: 43114,
+            contractAddress: tokenAddress,
+            //quoteCurrency:'usd'
+
+        }
+        ////console.log("Data:");
+        var data = await Moralis.Plugins.covalent.getBlockTokenHolders(options);
+        return data.data.items;
+    }
+
     const getTransactionsForTransactionHashWeb3 = async (txHash) => {
         const options = {
             chainId: 43114,
@@ -449,6 +468,7 @@ const TrackPage = (props) => {
 
     const getMarketCapOfToken = async () => {
         var totalSupply = parseFloat(await getTotalSupplyOfToken());
+        setTotalSupply(totalSupply);
         var tokenPrice = parseFloat(await fetchTokenPrice1(tokenAddress));
         //var tokenBalance =parseFloat(await getBalance(tokenAddress));
         //console.log('------' + totalSupply / 1.0e18 + '----' + tokenPrice.toString() + '---A---' + ((tokenPrice / 1000000000000000000)) + '-----' + (tokenPrice / 1.0e18));
@@ -575,7 +595,7 @@ const TrackPage = (props) => {
         var closest = counts.reduce(function (prev, curr) {
             return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
         });
-        console.log(closest);
+        //console.log(closest);
         var data = allTokenInfo.prices.find(x => x[0] == closest);
         return data[1];
     };
@@ -775,6 +795,26 @@ const TrackPage = (props) => {
                                     Wallet Token Info
                                 </a>
                             </li>
+
+                            <li className="-mb-px mr-2 last:mr-0 flex-auto text-center">
+                                <a
+                                    className={
+                                        "text-xs font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal " +
+                                        (openTab === 5
+                                            ? "text-white bg-" + color + "-600"
+                                            : "text-" + color + "-600 bg-white")
+                                    }
+                                    onClick={e => {
+                                        e.preventDefault();
+                                        setOpenTab(5);
+                                    }}
+                                    data-toggle="tab"
+                                    href="#link5"
+                                    role="tablist"
+                                >
+                                    Token Holders
+                                </a>
+                            </li>
                         </ul>
                         <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
                             <div className="px-4 py-5 flex-auto">
@@ -792,7 +832,7 @@ const TrackPage = (props) => {
                                                             <td className="border text-center">From</td>
                                                             <td className="border text-center">To</td>
                                                             <td className="border text-center">Price</td>
-                                                            <td className="border text-center">Tokens</td>
+                                                            <td className="border text-center">Quantity</td>
                                                             <td className="border text-center">Method</td>
                                                             <td className="border text-center">Block #</td>
                                                         </tr>
@@ -922,6 +962,38 @@ const TrackPage = (props) => {
                                                                     <td className="border text-center">{data.name}</td>
                                                                     <td className="border text-center"><img src={data.thumbnail} />{data.symbol}</td>
                                                                     <td className="border text-center">{data.balance}</td>
+                                                                </tr>
+                                                            ))
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className={openTab === 5 ? "block" : "hidden"} id="link5">
+
+                                        <div id="thi">
+                                            <h1 className="p-0 font-bold">Token Holders <a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/token/' + tokenAddress}>({tokenAddress.substring(0, 10)})</a></h1>
+                                            <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
+                                                <table className="w-full border-collapse border  app-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <td className="border text-center">Rank</td>
+                                                            <td className="border text-center">Address</td>
+                                                            <td className="border text-center">Quantity</td>
+                                                            <td className="border text-center">Percentage</td>
+
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {
+                                                            tokenHolders.map((data, idx) => (
+                                                                <tr id={idx} key={idx}>
+                                                                    <td className="border text-center">{idx + 1}</td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/address/' + data.address}>{data.address.substring(0, 10)}</a></td>
+                                                                    <td className="border text-center">{data.balance / 1.0e18}</td>
+                                                                    <td className="border text-center">{((data.balance / 1.0e18) / (totalSupply / 1.0e18)) * 100}</td>
+
                                                                 </tr>
                                                             ))
                                                         }
