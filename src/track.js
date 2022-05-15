@@ -992,7 +992,7 @@ const TrackPage = (props) => {
                                                                     <td className="border text-center">{idx + 1}</td>
                                                                     <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/address/' + data.address}>{data.address.substring(0, 10)}</a></td>
                                                                     <td className="border text-center">{data.balance / 1.0e18}</td>
-                                                                    <td className="border text-center">{((data.balance / 1.0e18) / (totalSupply / 1.0e18)) * 100}</td>
+                                                                    <td className="border text-center">{((data.balance / 1.0e18) / (totalSupply / 1.0e18)) * 100}%</td>
 
                                                                 </tr>
                                                             ))
