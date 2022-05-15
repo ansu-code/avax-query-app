@@ -137,7 +137,7 @@ const TrackPage = (props) => {
         //console.log("balances");
         var marketCap = await getMarketCapOfToken();
         //console.log('MC:::::' + marketCap);
-        await setTokenMarketCap(marketCap);
+        setTokenMarketCap(marketCap);
         // console.log(tokenMarketCap);
         var tokenPriceData = await getTokenPriceData(50);
         setAllTokenInfo(tokenPriceData);
@@ -244,6 +244,7 @@ const TrackPage = (props) => {
         setTxList(_txList)
         //console.log("hello1")
         //console.log(_txList)
+        await getTransactionsForAddress();
         await fetchTokenTransfers();
         stopLoading();
 
@@ -761,7 +762,7 @@ const TrackPage = (props) => {
                                     href="#link4"
                                     role="tablist"
                                 >
-                                    User Token Info
+                                    Wallet Token Info
                                 </a>
                             </li>
                         </ul>
@@ -776,13 +777,14 @@ const TrackPage = (props) => {
                                                     <thead>
                                                         <tr>
                                                             <td className="border text-center">Tx Hash</td>
-                                                            <td className="border text-center">Method</td>
-                                                            <td className="border text-center">Block #</td>
-                                                            <td className="border text-center">Date</td>
+                                                            <td className="border text-center">Timestamp</td>
                                                             <td className="border text-center">From</td>
                                                             <td className="border text-center">To</td>
                                                             <td className="border text-center">Value</td>
                                                             <td className="border text-center">In/Out</td>
+                                                            <td className="border text-center">Method</td>
+                                                            <td className="border text-center">Block #</td>
+                                         
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -790,14 +792,14 @@ const TrackPage = (props) => {
                                                             txList.map((data, idx) => (
                                                                 <tr id={idx} key={idx}>
                                                                     <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/tx/' + data.hash}>{data.hash.substring(0,10)}</a></td>
-                                                                    <td className="border text-center">{data.method}</td>
-                                                                    <td className="border text-center">{data.block_number}</td>
                                                                     <td className="border text-center">{data.block_timestamp}</td>
-                                                                    <td className="border text-center">{data.from_address}</td>
-                                                                    <td className="border text-center">{data.to_address}</td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/address/' + data.from_address}>{data.from_address.substring(0,10)}</a></td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/address/' + data.to_address}>{data.to_address.substring(0,10)}</a></td>
                                                                     <td className="border text-center">{parseInt(data.value) / 10 ** parseInt(tokenMetadata != null ? tokenMetadata.decimals : 1)}</td>
                                                                     <td className="border text-center">{data.to_address === accountAddress.toLowerCase() ? 'IN' : "OUT"}</td>
-                                                                </tr>
+                                                                    <td className="border text-center">{data.method}</td>
+                                                                    <td className="border text-center">{data.block_number}</td>
+                                                                    </tr>
                                                             ))
                                                         }
                                                     </tbody>
@@ -813,14 +815,15 @@ const TrackPage = (props) => {
                                                     <thead>
                                                         <tr>
                                                             <td className="border text-center">Tx Hash</td>
-                                                            <td className="border text-center">Symbol</td>
-                                                            <td className="border text-center">Address</td>
-                                                            <td className="border text-center">Block #</td>
-                                                            <td className="border text-center">Date</td>
+                                                            <td className="border text-center">Timestamp</td>
                                                             <td className="border text-center">From</td>
                                                             <td className="border text-center">To</td>
                                                             <td className="border text-center">Value</td>
                                                             <td className="border text-center">In/Out</td>
+                                                            <td className="border text-center">Token Address</td>
+                                                            <td className="border text-center">Symbol</td>
+                                                            <td className="border text-center">Block #</td>
+                                                            
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -828,14 +831,15 @@ const TrackPage = (props) => {
                                                             ttList.map((data, idx) => (
                                                                 <tr id={idx} key={idx}>
                                                                     <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/tx/' + data.transaction_hash}>{data.transaction_hash.substring(0,10)}</a></td>
-                                                                    <td className="border text-center"><img src={data.logo} />{data.symbol}</td>
-                                                                    <td className="border text-center">{data.address}</td>
-                                                                    <td className="border text-center">{data.block_number}</td>
                                                                     <td className="border text-center">{data.block_timestamp}</td>
-                                                                    <td className="border text-center">{data.from_address}</td>
-                                                                    <td className="border text-center">{data.to_address}</td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/address/' + data.from_address}>{data.from_address.substring(0,10)}</a></td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/address/' + data.from}>{data.to_address.substring(0,10)}</a></td>
                                                                     <td className="border text-center">{parseInt(data.value) / 10 ** parseInt(tokenMetadata != null ? tokenMetadata.decimals : 1)}</td>
                                                                     <td className="border text-center">{data.to_address === accountAddress.toLowerCase() ? 'IN' : "OUT"}</td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/token/' + data.address}>{data.address.substring(0,10)}</a></td>
+                                                                    <td className="border text-center"><img src={data.logo} />{data.symbol}</td>
+                                                                    <td className="border text-center">{data.block_number}</td>
+                                                                    
                                                                 </tr>
                                                             ))
                                                         }
@@ -854,11 +858,12 @@ const TrackPage = (props) => {
                                                         <tr>
                                                             <td className="border text-center">Tx Hash</td>
                                                             <td className="border text-center">Timestamp</td>
+                                                            <td className="border text-center">From</td>
+                                                            <td className="border text-center">To</td>
                                                             <td className="border text-center">Price</td>
                                                             <td className="border text-center">Tokens</td>
                                                             <td className="border text-center">Method</td>
-                                                            <td className="border text-center">From</td>
-                                                            <td className="border text-center">To</td>
+                                                            
                                                             
 
                                                         </tr>
@@ -869,11 +874,12 @@ const TrackPage = (props) => {
                                                                 <tr id={idx} key={idx}>
                                                                     <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/tx/' + data.hash}>{data.hash.substring(0,10)}</a></td>
                                                                     <td className="border text-center">{data.block_timestamp}</td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/address/' + data.from}>{data.from.substring(0,10)}</a></td>
+                                                                    <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/address/' + data.to}>{data.to.substring(0,10)}</a></td>
                                                                     <td className="border text-center">{data.tokenPrice}</td>
                                                                     <td className="border text-center">{data.value}</td>
                                                                     <td className="border text-center">CreateNodeWithTokens</td>
-                                                                    <td className="border text-center">{data.from}</td>
-                                                                    <td className="border text-center">{data.to}</td>
+                                                                    
                                                                    
                                                                 </tr>
                                                             ))
@@ -886,14 +892,14 @@ const TrackPage = (props) => {
                                     <div className={openTab === 4 ? "block" : "hidden"} id="link4">
 
                                         <div id="ti">
-                                            <h1 className="p-0 font-bold">User Token Info</h1>
+                                            <h1 className="p-0 font-bold">Wallet Token Info <a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/address/' + accountAddress}>({accountAddress.substring(0,10)})</a></h1>
                                             <div className="flex flex-col gap-2" style={{ overflow: "auto", maxHeight: "1000px" }}>
                                                 <table className="w-full border-collapse border  app-table">
                                                     <thead>
                                                         <tr>
                                                             <td className="border text-center">Token Address</td>
-                                                            <td className="border text-center">Symbol</td>
                                                             <td className="border text-center">Name</td>
+                                                            <td className="border text-center">Symbol</td>
                                                             <td className="border text-center">Balance</td>
 
                                                         </tr>
@@ -903,8 +909,8 @@ const TrackPage = (props) => {
                                                             tokenInfo.map((data, idx) => (
                                                                 <tr id={idx} key={idx}>
                                                                     <td className="border text-center"><a target={'_blank'} style={{ color: 'blue' }} href={'https://snowtrace.io/token/' + data.token_address}>{data.token_address.substring(0,10)}</a></td>
-                                                                    <td className="border text-center"><img src={data.thumbnail} />{data.symbol}</td>
                                                                     <td className="border text-center">{data.name}</td>
+                                                                    <td className="border text-center"><img src={data.thumbnail} />{data.symbol}</td>
                                                                     <td className="border text-center">{data.balance}</td>
                                                                 </tr>
                                                             ))
@@ -1001,9 +1007,9 @@ const TrackPage = (props) => {
                                 TestGetTx
                             </button> */}
                             <button className="btn-type-2 px-8 py-1" onClick={() => { fetchTransactions() }}>
-                                Get Tx and Token Transfers
+                               Search
                             </button>
-                            <button className="btn-type-2 px-8 py-1" onClick={() => getTransactionsForAddress(tokenAddress)}>Get Token Info</button>
+                            {/* <button className="btn-type-2 px-8 py-1" onClick={() => getTransactionsForAddress(tokenAddress)}>Get Token Info</button> */}
                         </div>
                     </div>
                     <Tabs color="pink" />
