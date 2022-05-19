@@ -366,7 +366,7 @@ const TrackPage = (props) => {
             ////console.log(object.id + " - " +await object.get("transaction_hash"));
             items.push({ 'tx_hash': await object.get("transaction_hash"), value: await object.get("value_decimal"), block_number: await object.get("block_number"), block_timestamp: await object.get("block_timestamp") });
         }
-        //console.log(results);
+        //console.log(items);
         //var items = data.data.items.slice(0, 10);
         ////console.log(data);
         let _dtxList = [];
@@ -380,12 +380,13 @@ const TrackPage = (props) => {
             //console.log(tx);
             var hexsign = tx.input.substring(0, 10)
             if (hexsign == "0x20802c7e") {
-                if (i++ < 20) {
+                //if (i++ < 20) {
                     //console.log(element.block_timestamp.getTime());
                     const tokenPrice = await fetchTokenPrice(tokenAddress, element.block_timestamp.getTime())
                     const _tx = { ...tx, value: element.value.value.$numberDecimal / 1.0e18, tokenPrice: tokenPrice, block_number: element.block_number, block_timestamp: element.block_timestamp.toLocaleString() };
+                    //console.log(_tx.block_timestamp);
                     _dtxList.push(_tx);
-                }
+               // }
             }
             try {
                 if (hexsign == "0x")
@@ -401,7 +402,7 @@ const TrackPage = (props) => {
             }
         });
         setTtxList(_dtxList);
-
+        //console.log(_dtxList);
         getAllTokenForAddress(accountAddress);
         //console.log('hello:' + tokenMarketCap);
         //debugger;
